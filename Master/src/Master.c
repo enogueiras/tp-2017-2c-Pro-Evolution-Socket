@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <commons/config.h>
+#include "socket.h"
+#include "globals.h"
 
 typedef struct {
 	char* yama_ip;
@@ -10,11 +13,37 @@ typedef struct {
 t_master* config;
 
 t_master *get_config(const char* path);
+void conexionConYama();
+
+#define PACKAGESIZE 1024
 
 int main() {
+
+	set_current_process(MASTER);
+	title("Master");
 	config = get_config("../Configuracion");
 
+	title("Conexiones");
+	conexionConYama();
+
 	return 0;
+
+}
+
+void conexionConYama() {
+	int yamaSocket = socket_init(config->yama_ip, config->yama_puerto);
+	printf(
+			"Conectado al servidor. Ya puede enviar mensajes. Escriba 'exit' para salir\n");
+	int enviar = 1;
+	char message[PACKAGESIZE];
+	while (enviar) {
+		fgets(message, PACKAGESIZE, stdin);
+		if (!strcmp(message, "exit\n"))
+			enviar = 0;
+		if (enviar)
+			socket_send_string(message, yamaSocket);
+	}
+	socket_close(yamaSocket);
 }
 
 t_master *get_config(const char *path) {
@@ -23,6 +52,10 @@ t_master *get_config(const char *path) {
 
 	config->yama_ip = config_get_string_value(c, "YAMA_IP");
 	config->yama_puerto = config_get_string_value(c, "YAMA_PUERTO");
+
+	title("Configuracion");
+	printf("IP YAMA: %s\n", config->yama_ip);
+	printf("PUERTO YAMA: %s\n", config->yama_puerto);
 
 	return config;
 }

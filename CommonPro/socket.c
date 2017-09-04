@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <poll.h>
+#include <netinet/in.h>
 #include "log.h"
 #include "serial.h"
 #include "protocol.h"
