@@ -102,7 +102,7 @@ void esperarConexiones() {
 							fdmax = newfd;
 						}
 						printf(
-								"Servidor: Nueva conexion de %i en " "socket %d\n",
+								"Servidor: Nueva conexion de %s en " "socket %d\n",
 								inet_ntoa(addr.sin_addr), newfd);
 					}
 				} else {
@@ -112,7 +112,7 @@ void esperarConexiones() {
 						// error o conexión cerrada por el cliente
 						if (nbytes == 0) {
 							// conexión cerrada
-							printf("selectserver: socket %d hung up\n", i);
+							printf("Servidor: Socket %d se cerro\n", i);
 						} else {
 							perror("recv");
 						}
