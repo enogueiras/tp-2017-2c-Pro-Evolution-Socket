@@ -23,4 +23,11 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>CommonPro</name>
+			<type>2</type>
+			<location>/home/utnso/git/tp-2017-2c-Pro-Evolution-Socket/CommonPro</location>
+		</link>
+	</linkedResources>
 </projectDescription>
