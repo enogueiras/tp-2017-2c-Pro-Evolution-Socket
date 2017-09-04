@@ -50,11 +50,3 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-
-#CProjects
-**/FileSystem/.cproject
-**/Master/.cproject
-**/Node/DataNode/.cproject
-**/Node/Worker/.cproject
-**/YAMA/.cproject
-
