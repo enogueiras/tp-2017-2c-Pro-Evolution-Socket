@@ -31,7 +31,8 @@ int main() {
 }
 
 void conexionConYama() {
-	int yamaSocket = socket_init(config->yama_ip, config->yama_puerto);
+	socket_t yamaSocket = socket_init(config->yama_ip, config->yama_puerto);
+	socket_t workerSocket = socket_init(config->yama_ip, "5050");
 	printf(
 			"Conectado al servidor. Ya puede enviar mensajes. Escriba 'exit' para salir\n");
 	int enviar = 1;
@@ -42,6 +43,8 @@ void conexionConYama() {
 			enviar = 0;
 		if (enviar)
 			socket_send_string(message, yamaSocket);
+			protocol_handshake_send(workerSocket);
+			socket_send_string(message, workerSocket);
 	}
 	socket_close(yamaSocket);
 }

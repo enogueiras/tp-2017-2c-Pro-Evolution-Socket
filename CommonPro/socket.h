@@ -2,6 +2,9 @@
 #define socket_h
 
 #include "utils.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 typedef int socket_t;
 

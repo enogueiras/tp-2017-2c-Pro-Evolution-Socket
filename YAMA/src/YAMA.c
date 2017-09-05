@@ -9,6 +9,7 @@
 #include <commons/config.h>
 #include "socket.h"
 #include "globals.h"
+#include "protocol.h"
 
 typedef struct {
 	char* fs_ip;
@@ -16,6 +17,8 @@ typedef struct {
 	int retardo_planif;
 	char* algoritmo;
 	char* puerto_yama;
+	char* puerto_datanode;
+	char* ip_datanode;
 } t_yama;
 
 t_yama* config;
@@ -26,11 +29,16 @@ void esperarConexiones();
 #define BACKLOG 10			// Define cuantas conexiones vamos a mantener pendientes al mismo tiempo
 #define PACKAGESIZE 1024	// Define cual va a ser el size maximo del paquete a enviar
 
+socket_t fsfd;
+
 int main() {
 
 	set_current_process(YAMA);
+
 	title("YAMA");
 	config = get_config("../Configuracion");
+	fsfd = socket_connect(config->fs_ip, config->fs_puerto);
+	protocol_handshake_send(fsfd);
 
 	title("Conexiones");
 	esperarConexiones();
@@ -122,6 +130,7 @@ void esperarConexiones() {
 						// tenemos datos de algún cliente
 						if (nbytes != 0) {
 							printf("%s", package);
+							socket_send_string(package, fsfd);
 						}
 					}
 				}
