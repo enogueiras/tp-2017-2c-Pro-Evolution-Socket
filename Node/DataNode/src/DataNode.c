@@ -21,16 +21,21 @@ t_dataNode* config;
 t_dataNode *get_config(const char* path);
 
 int main() {
+
+	set_current_process(DATANODE);
+
+	title("Data Node");
+
 	config = get_config("../../Configuracion");
 	char package[BUFFER_CAPACITY];
 
-	printf("Estableciendo conexión con el FileSystem...");
+	title("Conexiones");
 	fsfd = socket_connect(config->fs_ip, config->fs_puerto);
 
 	protocol_handshake_send(fsfd);
 	socket_send_string(config->ip_datanode, fsfd);
 	socket_send_string(config->puerto_datanode, fsfd);
-	printf("\33[2K\rConectado al FileSystem en %s:%s\n", config->fs_ip, config->fs_puerto);
+	printf("Conectado al FileSystem en %s:%s\n", config->fs_ip, config->fs_puerto);
 
 	while(true) {
 		socket_receive_string(package, fsfd);
@@ -49,6 +54,15 @@ t_dataNode *get_config(const char *path) {
 	config->ip_datanode = config_get_string_value(c, "IP_NODO");
 	config->puerto_datanode = config_get_string_value(c, "DATANODE_PUERTO");
 	config->ruta_databin = config_get_string_value(c, "RUTA_DATABIN");
+
+	title("Configuracion");
+	printf("IP FS: %s\n", config->fs_ip);
+	printf("PUERTO FS: %s\n", config->fs_puerto);
+	printf("IP DATANODE: %s\n", config->ip_datanode);
+	printf("NOMBRE DATANODE: %s\n", config->nombre_datanode);
+	printf("PUERTO DATANODE: %s\n", config->puerto_datanode);
+	printf("RUTA DATABIN: %s\n", config->ruta_databin);
+
 
 	return config;
 }

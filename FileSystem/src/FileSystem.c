@@ -41,6 +41,10 @@ void cli_thread(client_t*);
 
 int main(void) {
 
+	set_current_process(FS);
+
+	title("File System");
+
 	config = get_config("../Configuracion");
 	server_start(config);
 	inicializarConsola();
@@ -67,6 +71,9 @@ t_fileSystem *get_config(const char *path) {
 	t_fileSystem *config = malloc(sizeof(t_fileSystem));
 
 	config->puerto_fs = config_get_string_value(c, "PUERTO_FS");
+
+	title("Configuracion");
+	printf("PUERTO FS: %s\n", config->puerto_fs);
 
 	return config;
 }

@@ -33,6 +33,11 @@ void server_start(t_worker*);
 void cli_thread(client_t *client);
 
 int main() {
+
+	set_current_process(WORKER);
+
+	title("Worker");
+
 	config = get_config("../../Configuracion");
 
 	server_start(config);
@@ -48,6 +53,12 @@ t_worker *get_config(const char *path) {
 	config->fs_puerto = config_get_string_value(c, "FS_PUERTO");
 	config->worker_puerto = config_get_string_value(c, "WORKER_PUERTO");
 	config->ruta_databin = config_get_string_value(c, "RUTA_DATABIN");
+
+	title("Configuracion");
+	printf("IP FS: %s\n", config->fs_ip);
+	printf("PUERTO FS: %s\n", config->fs_puerto);
+	printf("PUERTO WORKER: %s\n", config->worker_puerto);
+	printf("RUTA DATABIN: %s\n", config->ruta_databin);
 
 	return config;
 }
@@ -79,6 +90,7 @@ void srv_fork(char * port) {
 }
 
 void server_start(t_worker *c) {
+	title("Conexiones");
 	server.active = true;
 	server.clients = list_create();
 	srv_fork(c->worker_puerto);
