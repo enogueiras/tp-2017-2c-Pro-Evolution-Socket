@@ -2,8 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <commons/config.h>
+#include <commons/string.h>
 #include "socket.h"
 #include "globals.h"
+#include "protocol.h"
+#include "utils.h"
 
 typedef struct {
 	char* yama_ip;
@@ -14,6 +17,7 @@ t_master* config;
 
 t_master *get_config(const char* path);
 void conexionConYama();
+void start_job(string, socket_t, socket_t);
 
 #define PACKAGESIZE 1024
 
@@ -35,16 +39,15 @@ void conexionConYama() {
 	socket_t workerSocket = socket_init(config->yama_ip, "5050");
 	printf(
 			"Conectado al servidor. Ya puede enviar mensajes. Escriba 'exit' para salir\n");
-	int enviar = 1;
-	char message[PACKAGESIZE];
-	while (enviar) {
-		fgets(message, PACKAGESIZE, stdin);
-		if (!strcmp(message, "exit\n"))
-			enviar = 0;
-		if (enviar)
-			socket_send_string(message, yamaSocket);
-			protocol_handshake_send(workerSocket);
-			socket_send_string(message, workerSocket);
+
+	protocol_handshake_send(yamaSocket);
+	protocol_handshake_send(workerSocket);
+	char command[BUFFER_CAPACITY];
+	while (true) {
+		char *argument = input(command);
+		if(streq(command, "run")){
+			start_job(argument, yamaSocket, workerSocket);
+		}
 	}
 	socket_close(yamaSocket);
 }
@@ -61,4 +64,17 @@ t_master *get_config(const char *path) {
 	printf("PUERTO YAMA: %s\n", config->yama_puerto);
 
 	return config;
+}
+
+void start_job(string path, socket_t yama, socket_t worker){
+	char job[BUFFER_CAPACITY];
+	ssize_t fsize = readfile(path,job);
+
+	if(fsize == -1){
+		printf("Error al leer el archivo. Intente nuevamente.\n");
+
+	}
+
+	socket_send_string(job, yama);
+	socket_send_string(job, worker);
 }

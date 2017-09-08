@@ -29,15 +29,16 @@ struct {
 	bool stable;
 } server;
 
-t_fileSystem *get_config(const char* path);
 
 void server_start(t_fileSystem*);
 
 void server_end(void);
 
-void inicializarConsola(void);
-
 void cli_thread(client_t*);
+
+t_fileSystem *get_config(const char* path);
+
+void inicializarConsola(void);
 
 int main(void) {
 

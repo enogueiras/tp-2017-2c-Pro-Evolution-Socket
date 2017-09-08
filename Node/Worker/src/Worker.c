@@ -73,15 +73,15 @@ void srv_fork(char * port) {
 	while(server.active) {
 		cli_sock = socket_accept(srv_sock);
 		if(cli_sock != -1) {
-			pid_t  pid;
-			pid = fork();
+			pid_t  pid = fork();
 			if (pid == 0){
+				printf("Entré \n");
 				client_t *client = alloc(sizeof(client_t));
 				client->socket = cli_sock;
 				list_add(server.clients, client);
 				cli_thread(client);
 			}else{
-				continue;
+				printf("Luke, I'm your father\n");
 			}
 		}
 	}
@@ -104,7 +104,7 @@ void cli_thread(client_t *client) {
 	header = protocol_handshake_receive(client->socket);
 	client->type = header.syspid;
 	if(client->type == MASTER) {
-		while(server.active) {
+		while(server.active){
 			socket_receive_string(package, client->socket);
 			printf("%s", package);
 		}

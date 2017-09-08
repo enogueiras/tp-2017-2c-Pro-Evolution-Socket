@@ -41,13 +41,6 @@ char *input(char *command) {
 }
 
 ssize_t readfile(const char *path, char *buffer) {
-	if(!string_starts_with((char *) path, "/")) {
-		char *rpath = string_duplicate((char *) get_resource_path());
-		string_append(&rpath, "scripts/");
-		string_append(&rpath, (char *) path);
-		path = rpath;
-	}
-
 	FILE *file = fopen(path, "rb");
 	if(file == NULL) {
 		log_report("Couldn't open resource at %s", path);
