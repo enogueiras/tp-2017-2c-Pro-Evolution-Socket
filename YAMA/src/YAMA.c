@@ -7,9 +7,11 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <commons/config.h>
+#include <commons/collections/list.h>
 #include "socket.h"
 #include "globals.h"
 #include "protocol.h"
+#include "log.h"
 
 typedef struct {
 	char* fs_ip;
@@ -21,13 +23,15 @@ typedef struct {
 	char* ip_datanode;
 } t_yama;
 
+typedef struct{
+    socket_t clientID;
+    unsigned char process;
+}client_t;
+
 t_yama* config;
 
 t_yama *get_config(const char* path);
-void esperarConexiones();
-
-#define BACKLOG 10			// Define cuantas conexiones vamos a mantener pendientes al mismo tiempo
-#define PACKAGESIZE 1024	// Define cual va a ser el size maximo del paquete a enviar
+void init_server(socket_t, t_list*);
 
 socket_t fsfd;
 
@@ -41,106 +45,58 @@ int main() {
 	protocol_handshake_send(fsfd);
 
 	title("Conexiones");
-	esperarConexiones();
+	t_list *clientes = list_create();
+	init_server(fsfd, clientes);
 
 	return 0;
 }
 
-void esperarConexiones() {
+void init_server(socket_t fs_fd, t_list *clientes) {
 
 	printf("Servidor esperando conexiones...\n");
-	int yamaSocket = socket_init(NULL, config->puerto_yama);
+	fdset_t read_fds, all_fds = socket_set_create();
+	socket_set_add(fs_fd, &all_fds);
+	socket_t sv_sock = socket_init(NULL, config->puerto_yama);
+	socket_set_add(sv_sock, &all_fds);
 
-	struct sockaddr_in addr; // Esta estructura contendra los datos de la conexion del cliente. IP, puerto, etc.
-	socklen_t addrlen = sizeof(addr);
+	while(true) {
+		read_fds = all_fds;
+		fdcheck(select(read_fds.max + 1, &read_fds.set, NULL, NULL, NULL));
 
-	//Atributos para select
-	fd_set master;		// conjunto maestro de descriptores de fichero
-	fd_set read_fds;// conjunto temporal de descriptores de fichero para select()
-	int fdmax;			// número máximo de descriptores de fichero
-	int newfd;			// descriptor de socket de nueva conexión aceptada
-	int i;
-	int nbytes;
-
-	FD_ZERO(&master);	// borra los conjuntos maestro y temporal
-	FD_ZERO(&read_fds);
-
-	struct addrinfo hints;
-	struct addrinfo *serverInfo;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_flags = AI_PASSIVE;
-	hints.ai_socktype = SOCK_STREAM;
-
-	getaddrinfo(NULL, config->puerto_yama, &hints, &serverInfo);
-
-	bind(yamaSocket, serverInfo->ai_addr, serverInfo->ai_addrlen);
-	freeaddrinfo(serverInfo); // Ya no lo vamos a necesitar
-
-	listen(yamaSocket, BACKLOG);
-
-	// añadir listener al conjunto maestro
-	FD_SET(yamaSocket, &master);
-	// seguir la pista del descriptor de fichero mayor
-	fdmax = yamaSocket; // por ahora es éste
-
-	char package[PACKAGESIZE];
-
-	//------------Comienzo del select------------
-	for (;;) {
-		read_fds = master; // cópialo
-		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) {
-			perror("select");
-			exit(1);
-		}
-		// explorar conexiones existentes en busca de datos que leer
-		for (i = 0; i <= fdmax; i++) {
-			if (FD_ISSET(i, &read_fds)) { // ¡¡tenemos datos!!
-				if (i == yamaSocket) {
-					// gestionar nuevas conexiones
-					addrlen = sizeof(addr);
-					if ((newfd = accept(yamaSocket, (struct sockaddr*) &addr,
-							&addrlen)) == -1) {
-						perror("accept");
-					} else {
-						FD_SET(newfd, &master); // añadir al conjunto maestro
-						if (newfd > fdmax) {
-							// actualizar el máximo
-							fdmax = newfd;
-						}
-						printf(
-								"Servidor: Nueva conexion de %s en " "socket %d\n",
-								inet_ntoa(addr.sin_addr), newfd);
-					}
-				} else {
-					// gestionar datos de un cliente
-					if ((nbytes = recv(i, (void*) package, PACKAGESIZE, 0))
-							<= 0) {
-						// error o conexión cerrada por el cliente
-						if (nbytes == 0) {
-							// conexión cerrada
-							printf("Servidor: Socket %d se cerro\n", i);
-						} else {
-							perror("recv");
-						}
-						close(i);
-						FD_CLR(i, &master); // eliminar del conjunto maestro
-					} else {
-						// tenemos datos de algún cliente
-						if (nbytes != 0) {
-							printf("%s", package);
-							socket_send_string(package, fsfd);
-						}
+		for(socket_t i = 0; i <= all_fds.max; i++) {
+			if(!FD_ISSET(i, &read_fds.set)) continue;
+			if(i == sv_sock) {
+				socket_t cli_sock = socket_accept(sv_sock);
+				header_t header = protocol_handshake_receive(cli_sock);
+				process_t cli_process = header.syspid;
+				if(cli_process == MASTER) {
+					socket_set_add(cli_sock, &all_fds);
+					client_t* cliente = alloc(sizeof(client_t));
+					cliente->clientID = cli_sock;
+					cliente->process= MASTER;
+					list_add(clientes, cliente);
+					log_inform("Received handshake from %s", get_process_name(cli_process));
+				}
+				else {
+					printf("Servidor: Socket %d se cerro\n", i);
+					socket_close(cli_sock);
+				}
+			}
+			else {
+				bool getClient(void *nbr) {
+					client_t *unCliente = nbr;
+					return (unCliente->clientID == i);
+				}
+				client_t* client = list_find(clientes, getClient);
+				packet_t packet = protocol_packet_receive(client->clientID);
+				if(client->process == MASTER) {
+						//Switch según operación
 					}
 				}
 			}
 		}
-	}
-
-	socket_close(yamaSocket);
-
 }
+
 
 t_yama *get_config(const char *path) {
 	t_config* c = config_create((char *) path);
