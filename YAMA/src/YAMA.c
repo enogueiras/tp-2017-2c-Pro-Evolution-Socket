@@ -40,19 +40,22 @@ int main() {
 	set_current_process(YAMA);
 
 	title("YAMA");
-	config = get_config("../Configuracion");
+	config = get_config("../Configuracion"); // Carga configuración de archivo
+
+	// Me conecto a FileSystem y envío handshake
 	fsfd = socket_connect(config->fs_ip, config->fs_puerto);
 	protocol_handshake_send(fsfd);
 
 	title("Conexiones");
-	t_list *clientes = list_create();
-	init_server(fsfd, clientes);
+	t_list *clientes = list_create(); // Creo lista para gestionar clientes (Master)
+	init_server(fsfd, clientes); // Inicia servidor con el socket de FileSystem y la lista de clientes
 
 	return 0;
 }
 
 void init_server(socket_t fs_fd, t_list *clientes) {
 
+	// Configuración para el servidor, estructuras administrativas
 	printf("Servidor esperando conexiones...\n");
 	fdset_t read_fds, all_fds = socket_set_create();
 	socket_set_add(fs_fd, &all_fds);
@@ -61,15 +64,16 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 
 	while(true) {
 		read_fds = all_fds;
-		fdcheck(select(read_fds.max + 1, &read_fds.set, NULL, NULL, NULL));
+		fdcheck(select(read_fds.max + 1, &read_fds.set, NULL, NULL, NULL)); // Comienza select
 
 		for(socket_t i = 0; i <= all_fds.max; i++) {
 			if(!FD_ISSET(i, &read_fds.set)) continue;
 			if(i == sv_sock) {
+				// Acepto cliente y recibo el Handshake para validar que sea Master
 				socket_t cli_sock = socket_accept(sv_sock);
 				header_t header = protocol_handshake_receive(cli_sock);
 				process_t cli_process = header.syspid;
-				if(cli_process == MASTER) {
+				if(cli_process == MASTER) { // Si es Master lo agrego a mi lista de clientes
 					socket_set_add(cli_sock, &all_fds);
 					client_t* cliente = alloc(sizeof(client_t));
 					cliente->clientID = cli_sock;
@@ -77,19 +81,20 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 					list_add(clientes, cliente);
 					log_inform("Received handshake from %s", get_process_name(cli_process));
 				}
-				else {
+				else { // Si no es Master lo rechazo y cierrp el socket
 					printf("Servidor: Socket %d se cerro\n", i);
 					socket_close(cli_sock);
 				}
 			}
-			else {
-				bool getClient(void *nbr) {
-					client_t *unCliente = nbr;
-					return (unCliente->clientID == i);
-				}
-				client_t* client = list_find(clientes, getClient);
-				packet_t packet = protocol_packet_receive(client->clientID);
-				if(client->process == MASTER) {
+			else {// En caso de que no sea un nuevo cliente, recibo el paquete y debo validar si es de FileSystem o de un cliente Master
+			      // Sólo está el caso de que sea de Master, esto ven cómo definirlo
+					bool getClient(void *nbr) {
+						client_t *unCliente = nbr;
+						return (unCliente->clientID == i);
+					}
+					client_t* client = list_find(clientes, getClient);
+					packet_t packet = protocol_packet_receive(client->clientID);
+					if(client->process == MASTER) {
 						//Switch según operación
 					}
 				}

@@ -38,7 +38,7 @@ void cli_thread(client_t*);
 
 t_fileSystem *get_config(const char* path);
 
-void inicializarConsola(void);
+void inicializarConsola();
 
 int main(void) {
 
@@ -52,20 +52,59 @@ int main(void) {
 	return EXIT_SUCCESS;
 }
 
-void inicializarConsola(void) {
+void inicializarConsola() {
 	char * linea;
-	while (1) {
+	while (true) {
 		linea = readline(">");
-		if (linea)
-			add_history(linea);
-		if (!strncmp(linea, "exit", 4)) {
-			free(linea);
-			break;
+		add_history(linea);
+
+		char **argument = string_split(linea, " ");
+
+		if (streq(argument[0],"format")){
+			puts("Formateo de Filesystem");
 		}
-		printf("%s\n", linea);
-		free(linea);
+		if (streq(argument[0],"rm")){
+			if (argument[1] != NULL){
+				if (streq(argument[1],"-d")) puts("Eliminar Directorio");
+				if (streq(argument[1],"-b")) puts("Eliminar Nodo/Bloque");
+			}
+			else{
+				puts("Eliminar Archivo");
+			}
+		}
+		if (streq(argument[0],"rename")){
+			puts("Renombrar archivo o directorio");
+		}
+		if (streq(argument[0],"mv")){
+			puts("Mover archivo o directorio");
+		}
+		if (streq(argument[0],"cat")){
+			puts("Muestra contenido como texto plano");
+		}
+		if (streq(argument[0],"mkdir")){
+			puts("Crea directorio");
+		}
+		if (streq(argument[0],"cpfrom")){
+			puts("Copia archivo local al yamafs");
+		}
+		if (streq(argument[0],"cpto")){
+			puts("Copia archivo local al yamafs");
+		}
+		if (streq(argument[0],"cpblock")){
+			puts("Crea copia de un bloque");
+		}
+		if (streq(argument[0],"md5")){
+			puts("MD5 de un archivo de yamafs");
+		}
+		if (streq(argument[0],"ls")){
+			puts("Lista archivos");
+		}
+		if (streq(argument[0],"info")){
+			puts("Información del Filesystem");
+		}
 	}
 }
+
 
 t_fileSystem *get_config(const char *path) {
 	t_config* c = config_create((char *) path);
