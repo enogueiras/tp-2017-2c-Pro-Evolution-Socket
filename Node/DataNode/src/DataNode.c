@@ -3,7 +3,10 @@
 #include <commons/config.h>
 #include <commons/collections/list.h>
 #include "protocol.h"
+#include "serial.h"
 #include "socket.h"
+#include "globals.h"
+
 
 typedef struct {
 	char* fs_ip;
@@ -20,6 +23,8 @@ t_dataNode* config;
 
 t_dataNode *get_config(const char* path);
 
+void setBlock(int,unsigned char*);
+
 int main() {
 
 	set_current_process(DATANODE);
@@ -27,19 +32,17 @@ int main() {
 	title("Data Node");
 
 	config = get_config("../../Configuracion");
-	char package[BUFFER_CAPACITY];
 
 	title("Conexiones");
 	fsfd = socket_connect(config->fs_ip, config->fs_puerto);
 
 	protocol_handshake_send(fsfd);
-	socket_send_string(config->ip_datanode, fsfd);
-	socket_send_string(config->puerto_datanode, fsfd);
+
 	printf("Conectado al FileSystem en %s:%s\n", config->fs_ip, config->fs_puerto);
 
 	while(true) {
-		socket_receive_string(package, fsfd);
-		printf("%s", package);
+		packet_t packet_setBlock = protocol_packet_receive(fsfd);
+		setBlock(packet_setBlock.header.msgsize, packet_setBlock.payload);
 	}
 	return 0;
 }
@@ -65,4 +68,19 @@ t_dataNode *get_config(const char *path) {
 
 
 	return config;
+}
+
+void setBlock(int tamanio, unsigned char* buffer){
+
+	FILE* file = fopen(config->ruta_databin,"rb+");
+	int bloque;
+	char data[tamanio-2];
+	char* longData = string_from_format("h%s%s",string_itoa(tamanio-2),"s");
+	serial_unpack(buffer,longData,&bloque,&data);
+	if(file){
+		fseek(file,0,SEEK_SET);
+		fwrite(data,tamanio-2,1,file);
+	}
+
+	fclose(file);
 }

@@ -1,48 +1,16 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <commons/config.h>
-#include <commons/collections/list.h>
-#include "socket.h"
-#include "thread.h"
-#include "protocol.h"
+#include "FileSystem.h"
 
-typedef struct {
-	char* puerto_fs;
-} t_fileSystem;
-
-typedef struct {
-	thread_t thread;
-	socket_t socket;
-	process_t type;
-} client_t;
-
-t_fileSystem* config;
-
-struct {
-	thread_t thread;
-	t_list* clients;
-	bool active;
-	bool stable;
-} server;
-
-
-void server_start(t_fileSystem*);
-
-void server_end(void);
-
-void cli_thread(client_t*);
-
-t_fileSystem *get_config(const char* path);
-
-void inicializarConsola();
-
-int main(void) {
+int main(int arg, char** argv) {
 
 	set_current_process(FS);
+	log_fs = log_create("../Log","FileSystem",false,LOG_LEVEL_INFO);
+	if (argv[1] != NULL && streq(argv[1], "--clean")){
+		log_info(log_fs,"Iniciar ignorando/eliminando estado anterior");
+	}
+	else{
+		t_config* restore_config = config_create("metada/nodos.dat");
+		if (restore_config == NULL) puts(string_from_format("BLOQUE%s%s%s",string_itoa(0),"COPIA",string_itoa(0)));
+	}
 
 	title("File System");
 
@@ -85,10 +53,10 @@ void inicializarConsola() {
 			puts("Crea directorio");
 		}
 		if (streq(argument[0],"cpfrom")){
-			puts("Copia archivo local al yamafs");
+			importarArchivo(argument[1], argument[2]);
 		}
 		if (streq(argument[0],"cpto")){
-			puts("Copia archivo local al yamafs");
+			puts("Copia archivo del yamafs al local");
 		}
 		if (streq(argument[0],"cpblock")){
 			puts("Crea copia de un bloque");
@@ -104,7 +72,6 @@ void inicializarConsola() {
 		}
 	}
 }
-
 
 t_fileSystem *get_config(const char *path) {
 	t_config* c = config_create((char *) path);
@@ -185,5 +152,49 @@ void cli_thread(client_t *client) {
 			list_iterate(server.clients, replyPackage);
 		}
 	}
+
+}
+
+int importarArchivo(char* location, char* destino){
+
+	FILE* file;
+	if (!(file = fopen(location, "r"))){
+		log_error(log_fs, "El archivo no existe o no se pudo abrir");
+	}
+	else{
+		//validar si el destino es valido
+		int size_bytes;
+		fseek(file,0,SEEK_END);
+		size_bytes = ftell(file);
+		rewind(file);
+
+		int cant_bloques = 1;
+		char* map;
+		if((map = mmap(NULL, size_bytes, PROT_READ, MAP_SHARED, fileno(file),0)) == MAP_FAILED){
+			printf("Error al mappear archivo\n");
+		}
+		int i;
+		for(i = 0; i < cant_bloques; i++){
+			enviarADataNode(map, i, size_bytes);
+		}
+	}
+	fclose(file);
+	return 0;
+}
+
+void enviarADataNode(char* map, int bloque, int size_bytes){
+
+	unsigned char buffer[BUFFER_CAPACITY];
+	header_t header_setBlock = protocol_header(OP_SET_BLOQUE);
+	header_setBlock.msgsize = serial_pack(buffer,"hs",bloque,map);
+	packet_t packet_setBlock = protocol_packet(header_setBlock, buffer);
+
+	bool getClient(void *nbr) {
+		client_t *unCliente = nbr;
+		return (DATANODE == unCliente->type);
+	}
+	client_t *cliente = list_find(server.clients, getClient);
+
+	protocol_packet_send(packet_setBlock,cliente->socket);
 
 }

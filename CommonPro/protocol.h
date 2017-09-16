@@ -6,7 +6,8 @@
 
 enum opcodes {
 	OP_UNDEFINED,
-	OP_HANDSHAKE
+	OP_HANDSHAKE,
+	OP_SET_BLOQUE
 };
 
 typedef struct {
