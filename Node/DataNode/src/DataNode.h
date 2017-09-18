@@ -11,7 +11,7 @@
 #include "globals.h"
 #include <commons/log.h>
 
-/*Estructuras*/
+/*ESTRUCTURAS*/
 
 typedef struct {
 	char* fs_ip;
