@@ -16,11 +16,14 @@
 #include "thread.h"
 #include "serial.h"
 #include "protocol.h"
+#include "console.h"
 
 /*ESTRUCTURAS*/
 
 typedef struct {
 	char* puerto_fs;
+	bool stable;
+	int nodosEstable;
 } t_fileSystem;
 
 typedef struct {
@@ -48,7 +51,6 @@ typedef struct{
 	t_bitarray* bitmap;
 }t_nodo;
 
-
 typedef struct {
 	thread_t thread;
 	socket_t socket;
@@ -64,7 +66,6 @@ struct {
 	t_list* clients;
 	bool active;
 	bool restore;
-	bool stable;
 } server;
 
 struct {
@@ -75,15 +76,8 @@ struct {
 
 /*FUNCIONES*/
 
-void server_start(t_fileSystem*);
-
-void server_end();
-
-void cli_thread(client_t*);
 
 t_fileSystem *get_config(const char* path);
-
-void inicializarConsola();
 
 int importarArchivo(char*, char*);
 
