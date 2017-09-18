@@ -1,34 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <commons/config.h>
-#include <commons/collections/list.h>
-#include "protocol.h"
-#include "serial.h"
-#include "socket.h"
-#include "globals.h"
-
-
-typedef struct {
-	char* fs_ip;
-	char* fs_puerto;
-	char* nombre_datanode;
-	char* puerto_datanode;
-	char* ip_datanode;
-	char* ruta_databin;
-} t_dataNode;
-
-socket_t fsfd;
-
-t_dataNode* config;
-
-t_dataNode *get_config(const char* path);
-
-void setBlock(int,unsigned char*);
+#include "DataNode.h"
 
 int main() {
 
 	set_current_process(DATANODE);
-
+	log_dataNode = log_create("../Log", "DataNode", true, LOG_LEVEL_INFO);
 	title("Data Node");
 
 	config = get_config("../../Configuracion");
@@ -38,13 +13,60 @@ int main() {
 
 	protocol_handshake_send(fsfd);
 
-	printf("Conectado al FileSystem en %s:%s\n", config->fs_ip, config->fs_puerto);
+	printf("Conectado al FileSystem en %s:%s\n", config->fs_ip,
+			config->fs_puerto);
 
-	while(true) {
-		packet_t packet_setBlock = protocol_packet_receive(fsfd);
-		setBlock(packet_setBlock.header.msgsize, packet_setBlock.payload);
+	while (true) {
+		recibirMensajesFileSystem();
 	}
 	return 0;
+}
+
+void recibirMensajesFileSystem() {
+
+	unsigned char buffer[BUFFER_CAPACITY];
+	packet_t packet = protocol_packet_receive(fsfd);
+
+	int bloqueId;
+	char* datos;
+	char* longData;
+
+	switch (packet.header.opcode) {
+	case OP_SET_BLOQUE:
+		longData = string_from_format("h%s%s",
+				string_itoa(packet.header.msgsize - 2), "s");
+		serial_unpack(buffer, longData, &bloqueId, &datos);
+		setBloque(bloqueId, datos);
+		break;
+	case OP_GET_BLOQUE:
+		serial_unpack(buffer, "h", &bloqueId);
+		datos = getBloque(bloqueId);
+		header_t header_getBloque_response = protocol_header(
+				OP_GET_BLOQUE_RESPONSE);
+		header_getBloque_response.msgsize = serial_pack(buffer, "s", datos);
+		packet_t packet_getBloque_response = protocol_packet(
+				header_getBloque_response, buffer);
+		protocol_packet_send(packet_getBloque_response, fsfd);
+		break;
+	default:
+		log_error(log_dataNode, "Mensaje desconocido");
+	}
+}
+
+void setBloque(int bloqueId, char* datos) {
+
+	//No funciona
+
+	FILE* file = fopen(config->ruta_databin, "rb+");
+	if (file) {
+		//fseek(file, bloqueId * tamBloque, SEEK_SET);
+		//fwrite(datos, sizeof(datos), 1, file);
+	}
+	fclose(file);
+}
+
+char* getBloque(int bloqueId) {
+	return "Bloque1";
 }
 
 t_dataNode *get_config(const char *path) {
@@ -66,21 +88,5 @@ t_dataNode *get_config(const char *path) {
 	printf("PUERTO DATANODE: %s\n", config->puerto_datanode);
 	printf("RUTA DATABIN: %s\n", config->ruta_databin);
 
-
 	return config;
-}
-
-void setBlock(int tamanio, unsigned char* buffer){
-
-	FILE* file = fopen(config->ruta_databin,"rb+");
-	int bloque;
-	char data[tamanio-2];
-	char* longData = string_from_format("h%s%s",string_itoa(tamanio-2),"s");
-	serial_unpack(buffer,longData,&bloque,&data);
-	if(file){
-		fseek(file,0,SEEK_SET);
-		fwrite(data,tamanio-2,1,file);
-	}
-
-	fclose(file);
 }
