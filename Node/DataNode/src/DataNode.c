@@ -1,29 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <commons/config.h>
-#include <commons/collections/list.h>
-#include "protocol.h"
-#include "serial.h"
-#include "socket.h"
-#include "globals.h"
-
-
-typedef struct {
-	char* fs_ip;
-	char* fs_puerto;
-	char* nombre_datanode;
-	char* puerto_datanode;
-	char* ip_datanode;
-	char* ruta_databin;
-} t_dataNode;
-
-socket_t fsfd;
-
-t_dataNode* config;
-
-t_dataNode *get_config(const char* path);
-
-void setBlock(int,unsigned char*);
+#include "DataNode.h"
 
 int main() {
 
