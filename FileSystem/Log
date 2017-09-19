@@ -2,3 +2,10 @@
 [ERROR] 14:01:15:98 FileSystem/(6660:6660): El archivo no se pudo abrir
 [INFO] 14:07:35:998 FileSystem/(6754:6754): Iniciar ignorando/eliminando estado anterior
 [INFO] 14:07:44:41 FileSystem/(6759:6759): Iniciar ignorando/eliminando estado anterior
+[ERROR] 16:55:38:786 FileSystem/(22251:22258): Operación desconocida
+[ERROR] 17:18:58:12 FileSystem/(22688:22695): Operación desconocida
+[ERROR] 17:21:00:309 FileSystem/(22767:22774): Operación desconocida
+[ERROR] 17:22:26:629 FileSystem/(22839:22846): Operación desconocida
+[ERROR] 17:36:44:47 FileSystem/(22925:22932): Operación desconocida
+[ERROR] 17:37:32:425 FileSystem/(23013:23020): Operación desconocida
+[ERROR] 17:41:09:124 FileSystem/(23078:23085): Operación desconocida

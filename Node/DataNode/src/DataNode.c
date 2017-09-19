@@ -55,10 +55,9 @@ void recibirMensajesFileSystem() {
 }
 
 void setBloque(int bloqueId, char* datos) {
-
 	FILE* file = fopen(config->ruta_databin, "rb+");
 	if (file) {
-		fseek(file, bloqueId, SEEK_SET);
+		fseek(file, bloqueId * MB, SEEK_SET);
 		fwrite(datos, string_length(datos), 1, file);
 	}
 	fclose(file);
