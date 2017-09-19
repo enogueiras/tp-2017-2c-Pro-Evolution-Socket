@@ -56,7 +56,6 @@ int importarArchivo(char* location, char* destino){
 		if((map = mmap(NULL, size_bytes, PROT_READ, MAP_SHARED, fileno(file),0)) == MAP_FAILED){
 			printf("Error al mappear archivo\n");
 		}
-		printf("%s\n",map);
 		int i;
 		for(i = 0; i < cant_bloques; i++){
 			enviarADataNode(map, i, size_bytes);

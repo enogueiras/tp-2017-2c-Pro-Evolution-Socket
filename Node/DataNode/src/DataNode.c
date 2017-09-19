@@ -58,14 +58,22 @@ void setBloque(int bloqueId, char* datos) {
 
 	FILE* file = fopen(config->ruta_databin, "rb+");
 	if (file) {
-		fseek(file,bloqueId,SEEK_SET);
-		fwrite(datos,string_length(datos),1,file);
+		fseek(file, bloqueId, SEEK_SET);
+		fwrite(datos, string_length(datos), 1, file);
 	}
 	fclose(file);
 }
 
 char* getBloque(int bloqueId) {
-	return "Bloque1";
+
+	char *datos = malloc(1024 * 1024);
+	FILE* file = fopen(config->ruta_databin, "rb+");
+	if (file) {
+		fseek(file, bloqueId, SEEK_SET);
+		fread(datos, 1024*1024, 1, file);
+	}
+	fclose(file);
+	return datos;
 }
 
 t_dataNode *get_config(const char *path) {
