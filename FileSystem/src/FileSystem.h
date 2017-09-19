@@ -27,6 +27,7 @@
 typedef struct {
 	char* puerto_fs;
 	bool stable;
+	bool restore;
 	int nodosEstable;
 	char* ruta_metadata;
 } t_fileSystem;
@@ -79,7 +80,6 @@ struct {
 	thread_t thread;
 	t_list* clients;
 	bool active;
-	bool restore;
 } server;
 
 /*FUNCIONES*/

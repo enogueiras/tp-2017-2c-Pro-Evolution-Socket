@@ -92,7 +92,9 @@ void format_fs(t_fileSystem *config,t_directory directorios[MAX_DIRECTORIOS]){
 
 	system(string_from_format("exec rm -r %s%s",config->ruta_metadata,"/*"));
     mkdir(string_from_format("%s%s",config->ruta_metadata,"/archivos/"), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    mkdir(string_from_format("%s%s",config->ruta_metadata,"/bitmaps/"), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
+    config->restore = true;
 	config->nodosEstable = 2;
 	directorios[0].index = 0;
 	directorios[0].padre = -1;
@@ -154,6 +156,8 @@ void restablecerNodos(t_config* restore_config) {
 }
 
 void restablecerEstado() {
+
+	config->restore = false;
 	t_config* restore_config = config_create(string_from_format("%s%s",config->ruta_metadata,"/nodos.bin"));
 	if (restore_config == NULL){
 		log_error(log_fs, "El archivo no se pudo abrir");

@@ -49,8 +49,21 @@ void cli_thread(client_t *client) {
 		client_t *cliente = list_remove_by_condition(server.clients, getClient);
 		free(cliente);
 	}
-	if(client->type == DATANODE && !config->stable) {
-		config->stable = true;
+	if(client->type == DATANODE) {
+		packet_t packetNode = protocol_packet_receive(client->socket);
+		switch(packetNode.header.opcode){
+		case OP_SEND_NAME_TAM_DATANODE:{
+			int tam;
+			char nombre[packetNode.header.msgsize-2];
+			char* longData;
+			longData = string_from_format("h%s%s",
+							string_itoa(packetNode.header.msgsize - 2), "s");
+			serial_unpack(packetNode.payload, longData, &tam, &nombre);
+
+			break;
+		}
+		default: log_error(log_fs, "Operación desconocida");;
+		}
 	}
 
 	if(client->type == YAMA && config->stable) {
