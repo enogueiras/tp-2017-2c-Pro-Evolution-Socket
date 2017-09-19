@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <commons/config.h>
@@ -18,12 +20,15 @@
 #include "protocol.h"
 #include "console.h"
 
+#define MAX_DIRECTORIOS 100
+
 /*ESTRUCTURAS*/
 
 typedef struct {
 	char* puerto_fs;
 	bool stable;
 	int nodosEstable;
+	char* ruta_metadata;
 } t_fileSystem;
 
 typedef struct {
@@ -57,9 +62,18 @@ typedef struct {
 	process_t type;
 } client_t;
 
+typedef struct {
+	int tamanio;
+	int libre;
+	char** nombre_nodos;
+} t_nodos_table;
+
 t_fileSystem* config;
 t_log* log_fs;
-t_directory directorios[100];
+t_directory directorios[MAX_DIRECTORIOS];
+t_nodos_table* tablaNodos;
+t_nodo* nodos;
+FILE *fileDirectorios, *fileNodos, *fileBitmap;
 
 struct {
 	thread_t thread;
@@ -67,12 +81,6 @@ struct {
 	bool active;
 	bool restore;
 } server;
-
-struct {
-	int tamanio;
-	int libre;
-	t_nodo* nodos;
-} nodos_table;
 
 /*FUNCIONES*/
 
@@ -82,5 +90,11 @@ t_fileSystem *get_config(const char* path);
 int importarArchivo(char*, char*);
 
 void enviarADataNode(char*, int, int);
+
+void format_fs(t_fileSystem*,t_directory[]);
+
+void restablecerEstado();
+
+void restablecerNodos(t_config*);
 
 #endif /* FILESYSTEM_H_ */
