@@ -29,14 +29,15 @@ void recibirMensajesFileSystem() {
 
 	int bloqueId;
 	char* datos;
+	char data[packet.header.msgsize - 2];
 	char* longData;
 
 	switch (packet.header.opcode) {
 	case OP_SET_BLOQUE:
 		longData = string_from_format("h%s%s",
 				string_itoa(packet.header.msgsize - 2), "s");
-		serial_unpack(buffer, longData, &bloqueId, &datos);
-		setBloque(bloqueId, datos);
+		serial_unpack(packet.payload, longData, &bloqueId, &data);
+		setBloque(bloqueId, data);
 		break;
 	case OP_GET_BLOQUE:
 		serial_unpack(buffer, "h", &bloqueId);
@@ -55,12 +56,10 @@ void recibirMensajesFileSystem() {
 
 void setBloque(int bloqueId, char* datos) {
 
-	//No funciona
-
 	FILE* file = fopen(config->ruta_databin, "rb+");
 	if (file) {
-		//fseek(file, bloqueId * tamBloque, SEEK_SET);
-		//fwrite(datos, sizeof(datos), 1, file);
+		fseek(file,bloqueId,SEEK_SET);
+		fwrite(datos,string_length(datos),1,file);
 	}
 	fclose(file);
 }
