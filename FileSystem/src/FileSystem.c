@@ -58,24 +58,32 @@ int importarArchivo(char* location, char* destino){
 		rewind(file);
 
 		int cant_bloques = (size_bytes/MB) + (size_bytes % MB != 0);
-
+		int tam = 0;
 		char* map;
 		if((map = mmap(NULL, size_bytes, PROT_READ, MAP_SHARED, fileno(file),0)) == MAP_FAILED){
 			log_error(log_fs,"Error al mappear archivo\n");
 		}
 		for(int i = 0; i < cant_bloques; i++){
-			enviarADataNode(map, i, size_bytes);
+			if(size_bytes > MB){
+				enviarADataNode(map, i, tam, MB);
+				tam += MB;
+				size_bytes -= MB;
+			}else{
+				enviarADataNode(map, i, tam, size_bytes);
+			}
 		}
 	}
 	fclose(file);
 	return 0;
 }
 
-void enviarADataNode(char* map, int bloque, int size_bytes){
+void enviarADataNode(char* map, int bloque, int tam, int size_bytes){
 
 	unsigned char buffer[BUFFER_CAPACITY];
+	unsigned char buff[MB];
+	memcpy(buff, map+tam, size_bytes-1);
 	header_t header_setBlock = protocol_header(OP_SET_BLOQUE);
-	header_setBlock.msgsize = serial_pack(buffer,"hs",bloque,map);
+	header_setBlock.msgsize = serial_pack(buffer,"hs",bloque,buff);
 	packet_t packet_setBlock = protocol_packet(header_setBlock, buffer);
 
 	bool getClient(void *nbr) {

@@ -89,7 +89,7 @@ t_fileSystem *get_config(const char* path);
 
 int importarArchivo(char*, char*);
 
-void enviarADataNode(char*, int, int);
+void enviarADataNode(char*, int, int, int);
 
 void format_fs(t_fileSystem*,t_directory[]);
 
