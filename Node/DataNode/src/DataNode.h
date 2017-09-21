@@ -17,7 +17,7 @@ typedef struct {
 	char* fs_ip;
 	char* fs_puerto;
 	char* nombre_datanode;
-	char* puerto_datanode;
+	int tamanio_datanode;
 	char* ip_datanode;
 	char* ruta_databin;
 } t_dataNode;
@@ -39,5 +39,7 @@ t_dataNode *get_config(const char* path);
 void setBloque(int bloqueId, char* datos);
 
 char* getBloque(int bloqueId);
+
+void enviarNombreYTamanioNodo(socket_t fsfd);
 
 #endif /* DATANODE_H_ */

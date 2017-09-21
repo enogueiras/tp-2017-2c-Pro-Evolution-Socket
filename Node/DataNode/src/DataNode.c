@@ -12,6 +12,7 @@ int main() {
 	fsfd = socket_connect(config->fs_ip, config->fs_puerto);
 
 	protocol_handshake_send(fsfd);
+	enviarNombreYTamanioNodo(fsfd);
 
 	printf("Conectado al FileSystem en %s:%s\n", config->fs_ip,
 			config->fs_puerto);
@@ -48,6 +49,7 @@ void recibirMensajesFileSystem() {
 		packet_t packet_getBloque_response = protocol_packet(
 				header_getBloque_response, buffer);
 		protocol_packet_send(packet_getBloque_response, fsfd);
+		free(datos);
 		break;
 	default:
 		log_error(log_dataNode, "Mensaje desconocido");
@@ -65,14 +67,27 @@ void setBloque(int bloqueId, char* datos) {
 
 char* getBloque(int bloqueId) {
 
-	char *datos = malloc(1024 * 1024);
+	char *datos = malloc(MB);
 	FILE* file = fopen(config->ruta_databin, "rb+");
 	if (file) {
 		fseek(file, bloqueId, SEEK_SET);
-		fread(datos, 1024*1024, 1, file);
+		fread(datos, MB, 1, file);
 	}
 	fclose(file);
 	return datos;
+}
+
+void enviarNombreYTamanioNodo(socket_t fsfd) {
+	unsigned char buffer[BUFFER_CAPACITY];
+	int tamanio = config->tamanio_datanode;
+	char* nombre = config->nombre_datanode;
+	header_t header_sendNameTam = protocol_header(
+			OP_SEND_NAME_TAM_DATANODE);
+	header_sendNameTam.msgsize = serial_pack(buffer, "hs", tamanio, nombre);
+	packet_t packet_getBloque_response = protocol_packet(
+			header_sendNameTam, buffer);
+	protocol_packet_send(packet_getBloque_response, fsfd);
+
 }
 
 t_dataNode *get_config(const char *path) {
@@ -83,7 +98,7 @@ t_dataNode *get_config(const char *path) {
 	config->fs_puerto = config_get_string_value(c, "FS_PUERTO");
 	config->nombre_datanode = config_get_string_value(c, "NOMBRE_NODO");
 	config->ip_datanode = config_get_string_value(c, "IP_NODO");
-	config->puerto_datanode = config_get_string_value(c, "DATANODE_PUERTO");
+	config->tamanio_datanode = config_get_int_value(c, "TAMANIO_DATANODE");
 	config->ruta_databin = config_get_string_value(c, "RUTA_DATABIN");
 
 	title("Configuracion");
@@ -91,7 +106,7 @@ t_dataNode *get_config(const char *path) {
 	printf("PUERTO FS: %s\n", config->fs_puerto);
 	printf("IP DATANODE: %s\n", config->ip_datanode);
 	printf("NOMBRE DATANODE: %s\n", config->nombre_datanode);
-	printf("PUERTO DATANODE: %s\n", config->puerto_datanode);
+	printf("TAMANIO_DATANODE: %i\n", config->tamanio_datanode);
 	printf("RUTA DATABIN: %s\n", config->ruta_databin);
 
 	return config;
