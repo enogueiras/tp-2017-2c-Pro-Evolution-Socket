@@ -1,39 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <commons/config.h>
-#include <commons/collections/list.h>
-#include "socket.h"
-#include "globals.h"
-#include "protocol.h"
-#include "log.h"
-
-typedef struct {
-	char* fs_ip;
-	char* fs_puerto;
-	int retardo_planif;
-	char* algoritmo;
-	char* puerto_yama;
-	char* puerto_datanode;
-	char* ip_datanode;
-} t_yama;
-
-typedef struct{
-    socket_t clientID;
-    unsigned char process;
-}client_t;
-
-t_yama* config;
-
-t_yama *get_config(const char* path);
-void init_server(socket_t, t_list*);
-
-socket_t fsfd;
+#include "YAMA.h"
 
 int main() {
 
@@ -95,7 +60,18 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 					client_t* client = list_find(clientes, getClient);
 					packet_t packet = protocol_packet_receive(client->clientID);
 					if(client->process == MASTER) {
-						//Switch según operación
+						char * longData;
+						char * script;
+						switch (packet.header.opcode) {
+							case OP_SEND_SCRIPT:
+								longData = string_from_format("h%s%s",
+												string_itoa(packet.header.msgsize - 1), "s");
+								serial_unpack(packet.payload, longData, &script);
+								break;
+							default:
+								break;
+						}
+
 					}
 				}
 			}
