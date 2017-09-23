@@ -53,7 +53,7 @@ void start_job(string path, socket_t yama, socket_t worker){
 		printf("Error al leer el archivo. Intente nuevamente.\n");
 
 	}
-
+	//Armar paquete y enviarlo
 	socket_send_string(job, yama);
 	socket_send_string(job, worker);
 }

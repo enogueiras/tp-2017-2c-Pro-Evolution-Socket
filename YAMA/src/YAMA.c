@@ -63,10 +63,24 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 						char * longData;
 						char * script;
 						switch (packet.header.opcode) {
-							case OP_SEND_SCRIPT:
+							case OP_SEND_JOB_FILE:
+								//Me manda el nombre del archivo a buscar en FS
 								longData = string_from_format("h%s%s",
 												string_itoa(packet.header.msgsize - 1), "s");
 								serial_unpack(packet.payload, longData, &script);
+								//Preguntar a FS info sobre el archivo
+								//Empezar planificacion y mandar mensajes a MASTER
+								break;
+							case OP_SEND_JOB_RESULTADO:
+								//Acá es la ruta y nombre del archivo final a almacenar
+								break;
+							case OP_JOB_NODO_OK:
+								//Acá me envia un paquete con la informacion del nodo que terminó ok
+								//Volver a planificar para este nodo la siguiente etapa
+								break;
+							case OP_JOB_NODO_ERORR:
+								// Me envia paquete informacion sobre nodo que tiró error
+								// Fijarse la etapa donde falló y abortar el job o volver a planificar sobre este
 								break;
 							default:
 								break;
