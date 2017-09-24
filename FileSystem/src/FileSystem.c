@@ -69,6 +69,7 @@ int importarArchivo(char* location, char* destino){
 				tam += MB;
 				size_bytes -= MB;
 			}else{
+				size_bytes++;
 				enviarADataNode(map, i, tam, size_bytes);
 			}
 		}
@@ -93,7 +94,7 @@ void enviarADataNode(char* map, int bloque, int tam, int size_bytes){
 	client_t *cliente = list_find(server.clients, getClient);
 
 	protocol_packet_send(packet_setBlock,cliente->socket);
-
+	memset(buff, 0, MB);
 }
 
 void format_fs(t_fileSystem *config,t_directory directorios[MAX_DIRECTORIOS]){
