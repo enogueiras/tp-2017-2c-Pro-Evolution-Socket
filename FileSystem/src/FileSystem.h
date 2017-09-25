@@ -8,9 +8,11 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <commons/config.h>
+#include <commons/string.h>
 #include <commons/log.h>
 #include <commons/bitarray.h>
 #include <commons/collections/list.h>
@@ -39,14 +41,15 @@ typedef struct {
 }t_directory;
 
 typedef struct{
+	char* nombre;
 	int tamanio;
-	int tipo;
+	char* tipo;
 	t_list* bloques;
 }t_arch;
 
 typedef struct{
-	char* original;
-	char* copia;
+	char** original;
+	char** copia;
 	int bytes;
 }t_block;
 
@@ -71,6 +74,7 @@ typedef struct {
 
 t_fileSystem* config;
 t_log* log_fs;
+t_list* archivos;
 t_directory directorios[MAX_DIRECTORIOS];
 t_nodos_table* tablaNodos;
 t_nodo* nodos;
@@ -91,10 +95,5 @@ int importarArchivo(char*, char*);
 
 void enviarADataNode(char*, int, int, int);
 
-void format_fs(t_fileSystem*,t_directory[]);
-
-void restablecerEstado();
-
-void restablecerNodos(t_config*);
 
 #endif /* FILESYSTEM_H_ */

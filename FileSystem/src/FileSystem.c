@@ -1,11 +1,13 @@
 #include "FileSystem.h"
 #include "server.h"
+#include "inicializacion.h"
 
 int main(int arg, char** argv) {
 
 	set_current_process(FS);
 	log_fs = log_create("../Log","FileSystem",false,LOG_LEVEL_INFO);
 	config = get_config("../Configuracion");
+	archivos = list_create();
 
 	if (argv[1] != NULL && streq(argv[1], "--clean")){
 		log_info(log_fs,"Iniciar ignorando/eliminando estado anterior");
@@ -13,7 +15,11 @@ int main(int arg, char** argv) {
 	}
 	else{
 		restablecerEstado();
+		for(int i = 0; i < list_size(archivos); i++){
+			t_arch* archivo = list_get(archivos, i);
+			printf("%s\n", archivo->nombre);
 
+		}
 	}
 
 	title("File System");
@@ -26,7 +32,6 @@ int main(int arg, char** argv) {
 	fclose(fileBitmap);
 	return EXIT_SUCCESS;
 }
-
 
 t_fileSystem *get_config(const char *path) {
 	t_config* c = config_create((char *) path);
@@ -83,6 +88,7 @@ void enviarADataNode(char* map, int bloque, int tam, int size_bytes){
 	unsigned char buffer[BUFFER_CAPACITY];
 	unsigned char buff[MB];
 	memcpy(buff, map+tam, size_bytes-1);
+	if(size_bytes != MB) printf("%s\n", buff);
 	header_t header_setBlock = protocol_header(OP_SET_BLOQUE);
 	header_setBlock.msgsize = serial_pack(buffer,"hs",bloque,buff);
 	packet_t packet_setBlock = protocol_packet(header_setBlock, buffer);
@@ -97,90 +103,4 @@ void enviarADataNode(char* map, int bloque, int tam, int size_bytes){
 	memset(buff, 0, MB);
 }
 
-void format_fs(t_fileSystem *config,t_directory directorios[MAX_DIRECTORIOS]){
-
-	system(string_from_format("exec rm -r %s%s",config->ruta_metadata,"/*"));
-    mkdir(string_from_format("%s%s",config->ruta_metadata,"/archivos/"), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    mkdir(string_from_format("%s%s",config->ruta_metadata,"/bitmaps/"), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
-    config->restore = true;
-	config->nodosEstable = 2;
-	directorios[0].index = 0;
-	directorios[0].padre = -1;
-	strcpy(directorios[0].nombre, "/");
-	for (int i = 1; i < MAX_DIRECTORIOS; i++){
-		strcpy(directorios[i].nombre, string_new());
-	}
-
-	if (!(fileDirectorios = fopen(string_from_format("%s%s",config->ruta_metadata,"/directorios.dat"), "wb+"))){
-		log_error(log_fs, "El archivo no se pudo abrir");
-	}else{
-		for (int i = 0; i < MAX_DIRECTORIOS; i++){
-			fwrite (&directorios[i], sizeof(t_directory),1,fileDirectorios);
-		}
-	}
-	if (!(fileNodos = fopen(string_from_format("%s%s",config->ruta_metadata,"/nodos.bin"), "wb+")))
-		log_error(log_fs, "El archivo no se pudo abrir");
-}
-
-void restablecerNodos(t_config* restore_config) {
-	t_nodos_table* tablaNodos = malloc(sizeof(t_nodos_table));
-	tablaNodos->tamanio = config_get_int_value(restore_config, "TAMANIO");
-	tablaNodos->libre = config_get_int_value(restore_config, "LIBRE");
-	tablaNodos->nombre_nodos= config_get_array_value(restore_config, "NODOS");
-	int counter = 0;
-	while (tablaNodos->nombre_nodos[counter])
-		counter++;
-	nodos = realloc(nodos, counter * sizeof(t_nodo));
-	for (int i = 0; i < counter; i++) {
-		nodos[i].total = config_get_int_value(restore_config,
-				string_from_format("%s%s", tablaNodos->nombre_nodos[i],
-						"Total"));
-		nodos[i].libre = config_get_int_value(restore_config,
-				string_from_format("%s%s", tablaNodos->nombre_nodos[i],
-						"Libre"));
-		if (!(fileBitmap = fopen(
-				string_from_format("%s%s%s%s", config->ruta_metadata,
-						"/bitmaps/", tablaNodos->nombre_nodos[i], ".dat"),
-				"rb+"))) {
-			log_error(log_fs, "El archivo no se pudo abrir");
-		} else {
-			int size_bytes;
-			fseek(fileBitmap, 0, SEEK_END);
-			size_bytes = ftell(fileBitmap);
-			rewind(fileBitmap);
-
-			char* map;
-			if ((map = mmap(NULL, size_bytes, PROT_READ | PROT_WRITE,
-					MAP_SHARED, fileno(fileBitmap), 0)) == MAP_FAILED) {
-				log_error(log_fs, "Error al mappear archivo\n");
-			} else {
-				nodos[i].bitmap = bitarray_create_with_mode(map, nodos[i].total,
-						LSB_FIRST);
-			}
-
-		}
-	}
-
-}
-
-void restablecerEstado() {
-
-	config->restore = false;
-	t_config* restore_config = config_create(string_from_format("%s%s",config->ruta_metadata,"/nodos.bin"));
-	if (restore_config == NULL){
-		log_error(log_fs, "El archivo no se pudo abrir");
-	}else{
-		restablecerNodos(restore_config);
-	}
-
-	if (!(fileDirectorios = fopen(string_from_format("%s%s", config->ruta_metadata,"/directorios.dat"), "wb+"))) {
-		log_error(log_fs, "El archivo no se pudo abrir");
-	} else {
-		for (int i = 0; i < MAX_DIRECTORIOS; i++) {
-			fread(&directorios[i], sizeof(t_directory), 1, fileDirectorios);
-		}
-	}
-
-}
 
