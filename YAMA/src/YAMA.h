@@ -17,6 +17,7 @@
 #include "globals.h"
 #include "protocol.h"
 #include "log.h"
+#include "serial.h"
 
 typedef struct {
 	char* fs_ip;
