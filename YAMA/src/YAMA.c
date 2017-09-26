@@ -1,14 +1,15 @@
 #include "YAMA.h"
+#include "configYAMA.h"
 
 int main() {
 
 	set_current_process(YAMA);
 
 	title("YAMA");
-	config = get_config("../Configuracion"); // Carga configuración de archivo
+	configYAMA = get_config("../Configuracion"); // Carga configuración de archivo
 
 	// Me conecto a FileSystem y envío handshake
-	fsfd = socket_connect(config->fs_ip, config->fs_puerto);
+	fsfd = socket_connect(configYAMA->fs_ip, configYAMA->fs_puerto);
 	protocol_handshake_send(fsfd);
 
 	title("Conexiones");
@@ -24,7 +25,7 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 	printf("Servidor esperando conexiones...\n");
 	fdset_t read_fds, all_fds = socket_set_create();
 	socket_set_add(fs_fd, &all_fds);
-	socket_t sv_sock = socket_init(NULL, config->puerto_yama);
+	socket_t sv_sock = socket_init(NULL, configYAMA->puerto_yama);
 	socket_set_add(sv_sock, &all_fds);
 
 	while(true) {
@@ -90,25 +91,4 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 				}
 			}
 		}
-}
-
-
-t_yama *get_config(const char *path) {
-	t_config* c = config_create((char *) path);
-	t_yama *config = malloc(sizeof(t_yama));
-
-	config->fs_ip = config_get_string_value(c, "FS_IP");
-	config->fs_puerto = config_get_string_value(c, "FS_PUERTO");
-	config->retardo_planif = config_get_int_value(c, "RETARDO_PLANIFICACION");
-	config->algoritmo = config_get_string_value(c, "ALGORITMO_BALANCEO");
-	config->puerto_yama = config_get_string_value(c, "PUERTO_YAMA");
-
-	title("Configuracion");
-	printf("IP FS: %s\n", config->fs_ip);
-	printf("PUERTO FS: %s\n", config->puerto_yama);
-	printf("PUERTO YAMA: %s\n", config->puerto_yama);
-	printf("ALGORITMO BALANCEO: %s\n", config->algoritmo);
-	printf("RETARDO PLANIFACION: %i\n", config->retardo_planif);
-
-	return config;
 }

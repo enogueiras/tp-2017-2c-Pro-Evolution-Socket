@@ -19,15 +19,7 @@
 #include "log.h"
 #include "serial.h"
 
-typedef struct {
-	char* fs_ip;
-	char* fs_puerto;
-	int retardo_planif;
-	char* algoritmo;
-	char* puerto_yama;
-	char* puerto_datanode;
-	char* ip_datanode;
-} t_yama;
+
 
 typedef struct{
     socket_t clientID;
@@ -46,9 +38,7 @@ typedef struct {
 	int estado;
 } t_tablaEstados;
 
-t_yama* config;
 
-t_yama *get_config(const char* path);
 void init_server(socket_t, t_list*);
 
 socket_t fsfd;

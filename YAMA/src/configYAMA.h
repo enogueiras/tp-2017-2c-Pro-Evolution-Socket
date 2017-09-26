@@ -18,7 +18,7 @@ typedef struct {
 	char* ip_datanode;
 } t_yama;
 
-t_yama* config;
+t_yama* configYAMA;
 
 t_yama *get_configYAMA(const char* path);
 
