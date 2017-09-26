@@ -12,7 +12,7 @@ int main() {
 	fsfd = socket_connect(configDATANODE->fs_ip, configDATANODE->fs_puerto);
 
 	protocol_handshake_send(fsfd);
-	//enviarNombreYTamanioNodo(fsfd);
+	enviarNombreYTamanioNodo(fsfd);
 
 	printf("Conectado al FileSystem en %s:%s\n", configDATANODE->fs_ip,
 			configDATANODE->fs_puerto);
@@ -91,7 +91,7 @@ void enviarNombreYTamanioNodo(socket_t fsfd) {
 
 t_dataNode *get_config(const char *path) {
 	t_config* c = config_create((char *) path);
-	t_dataNode *configYAMA = malloc(sizeof(t_dataNode));
+	t_dataNode *configDATANODE = malloc(sizeof(t_dataNode));
 
 	configDATANODE->fs_ip = config_get_string_value(c, "FS_IP");
 	configDATANODE->fs_puerto = config_get_string_value(c, "FS_PUERTO");
