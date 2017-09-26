@@ -6,16 +6,16 @@ int main() {
 	log_dataNode = log_create("../Log", "DataNode", true, LOG_LEVEL_INFO);
 	title("Data Node");
 
-	configYAMA = get_config("../../Configuracion");
+	configDATANODE = get_config("../../Configuracion");
 
 	title("Conexiones");
-	fsfd = socket_connect(configYAMA->fs_ip, configYAMA->fs_puerto);
+	fsfd = socket_connect(configDATANODE->fs_ip, configDATANODE->fs_puerto);
 
 	protocol_handshake_send(fsfd);
 	//enviarNombreYTamanioNodo(fsfd);
 
-	printf("Conectado al FileSystem en %s:%s\n", configYAMA->fs_ip,
-			configYAMA->fs_puerto);
+	printf("Conectado al FileSystem en %s:%s\n", configDATANODE->fs_ip,
+			configDATANODE->fs_puerto);
 
 	while (true) {
 		recibirMensajesFileSystem();
@@ -56,7 +56,7 @@ void recibirMensajesFileSystem() {
 }
 
 void setBloque(int bloqueId, char* datos) {
-	FILE* file = fopen(configYAMA->ruta_databin, "rb+");
+	FILE* file = fopen(configDATANODE->ruta_databin, "rb+");
 	if (file) {
 		fseek(file, bloqueId * MB, SEEK_SET);
 		fwrite(datos, string_length(datos), 1, file);
@@ -67,7 +67,7 @@ void setBloque(int bloqueId, char* datos) {
 char* getBloque(int bloqueId) {
 
 	char *datos = malloc(MB);
-	FILE* file = fopen(configYAMA->ruta_databin, "rb+");
+	FILE* file = fopen(configDATANODE->ruta_databin, "rb+");
 	if (file) {
 		fseek(file, bloqueId, SEEK_SET);
 		fread(datos, MB, 1, file);
@@ -78,8 +78,8 @@ char* getBloque(int bloqueId) {
 
 void enviarNombreYTamanioNodo(socket_t fsfd) {
 	unsigned char buffer[BUFFER_CAPACITY];
-	int tamanio = configYAMA->tamanio_datanode;
-	char* nombre = configYAMA->nombre_datanode;
+	int tamanio = configDATANODE->tamanio_datanode;
+	char* nombre = configDATANODE->nombre_datanode;
 	header_t header_sendNameTam = protocol_header(
 			OP_SEND_NAME_TAM_DATANODE);
 	header_sendNameTam.msgsize = serial_pack(buffer, "hs", tamanio, nombre);
@@ -93,20 +93,20 @@ t_dataNode *get_config(const char *path) {
 	t_config* c = config_create((char *) path);
 	t_dataNode *configYAMA = malloc(sizeof(t_dataNode));
 
-	configYAMA->fs_ip = config_get_string_value(c, "FS_IP");
-	configYAMA->fs_puerto = config_get_string_value(c, "FS_PUERTO");
-	configYAMA->nombre_datanode = config_get_string_value(c, "NOMBRE_NODO");
-	configYAMA->ip_datanode = config_get_string_value(c, "IP_NODO");
-	configYAMA->tamanio_datanode = config_get_int_value(c, "TAMANIO_DATANODE");
-	configYAMA->ruta_databin = config_get_string_value(c, "RUTA_DATABIN");
+	configDATANODE->fs_ip = config_get_string_value(c, "FS_IP");
+	configDATANODE->fs_puerto = config_get_string_value(c, "FS_PUERTO");
+	configDATANODE->nombre_datanode = config_get_string_value(c, "NOMBRE_NODO");
+	configDATANODE->ip_datanode = config_get_string_value(c, "IP_NODO");
+	configDATANODE->tamanio_datanode = config_get_int_value(c, "TAMANIO_DATANODE");
+	configDATANODE->ruta_databin = config_get_string_value(c, "RUTA_DATABIN");
 
 	title("Configuracion");
-	printf("IP FS: %s\n", configYAMA->fs_ip);
-	printf("PUERTO FS: %s\n", configYAMA->fs_puerto);
-	printf("IP DATANODE: %s\n", configYAMA->ip_datanode);
-	printf("NOMBRE DATANODE: %s\n", configYAMA->nombre_datanode);
-	printf("TAMANIO_DATANODE: %i\n", configYAMA->tamanio_datanode);
-	printf("RUTA DATABIN: %s\n", configYAMA->ruta_databin);
+	printf("IP FS: %s\n", configDATANODE->fs_ip);
+	printf("PUERTO FS: %s\n", configDATANODE->fs_puerto);
+	printf("IP DATANODE: %s\n", configDATANODE->ip_datanode);
+	printf("NOMBRE DATANODE: %s\n", configDATANODE->nombre_datanode);
+	printf("TAMANIO_DATANODE: %i\n", configDATANODE->tamanio_datanode);
+	printf("RUTA DATABIN: %s\n", configDATANODE->ruta_databin);
 
-	return configYAMA;
+	return configDATANODE;
 }

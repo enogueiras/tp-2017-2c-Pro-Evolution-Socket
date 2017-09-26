@@ -74,7 +74,7 @@ typedef struct {
 	char** nombre_nodos;
 } t_nodos_table;
 
-t_fileSystem* configYAMA;
+t_fileSystem* configFS;
 t_log* log_fs;
 t_list* archivos;
 t_directory directorios[MAX_DIRECTORIOS];

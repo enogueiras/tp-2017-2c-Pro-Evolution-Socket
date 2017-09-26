@@ -29,7 +29,7 @@ void server_start(t_fileSystem *c) {
 }
 
 void server_end() {
-	configYAMA->stable = false;
+	configFS->stable = false;
 	thread_kill(server.thread);
 }
 
@@ -39,7 +39,7 @@ void cli_thread(client_t *client) {
 
 	header = protocol_handshake_receive(client->socket);
 	client->type = header.syspid;
-	if(client->type == YAMA && !configYAMA->stable) {
+	if(client->type == YAMA && !configFS->stable) {
 		socket_close(client->socket);
 		printf("Servidor: Socket %d se cerro por no estar estable\n", client->socket);
 		bool getClient(void *nbr) {
@@ -66,8 +66,8 @@ void cli_thread(client_t *client) {
 		}
 	}
 
-	if(client->type == YAMA && configYAMA->stable) {
-		while(configYAMA->stable) {
+	if(client->type == YAMA && configFS->stable) {
+		while(configFS->stable) {
 			socket_receive_string(package, client->socket);
 			printf("%s", package);
 			void replyPackage(void *nbr) {

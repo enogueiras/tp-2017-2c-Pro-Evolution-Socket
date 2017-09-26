@@ -17,7 +17,7 @@ typedef struct {
 	char* yama_puerto;
 } t_master;
 
-t_master* configYAMA;
+t_master* configMASTER;
 
 t_master *get_config(const char* path);
 void conexionConYama();
