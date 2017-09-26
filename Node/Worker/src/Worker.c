@@ -25,7 +25,7 @@ struct {
 	bool active;
 } server;
 
-t_worker* config;
+t_worker* configYAMA;
 
 t_worker *get_config(const char* path);
 
@@ -38,29 +38,29 @@ int main() {
 
 	title("Worker");
 
-	config = get_config("../../Configuracion");
+	configYAMA = get_config("../../Configuracion");
 
-	server_start(config);
+	server_start(configYAMA);
 
 	return 0;
 }
 
 t_worker *get_config(const char *path) {
 	t_config* c = config_create((char *) path);
-	t_worker *config = malloc(sizeof(t_worker));
+	t_worker *configYAMA = malloc(sizeof(t_worker));
 
-	config->fs_ip = config_get_string_value(c, "FS_IP");
-	config->fs_puerto = config_get_string_value(c, "FS_PUERTO");
-	config->worker_puerto = config_get_string_value(c, "WORKER_PUERTO");
-	config->ruta_databin = config_get_string_value(c, "RUTA_DATABIN");
+	configYAMA->fs_ip = config_get_string_value(c, "FS_IP");
+	configYAMA->fs_puerto = config_get_string_value(c, "FS_PUERTO");
+	configYAMA->worker_puerto = config_get_string_value(c, "WORKER_PUERTO");
+	configYAMA->ruta_databin = config_get_string_value(c, "RUTA_DATABIN");
 
 	title("Configuracion");
-	printf("IP FS: %s\n", config->fs_ip);
-	printf("PUERTO FS: %s\n", config->fs_puerto);
-	printf("PUERTO WORKER: %s\n", config->worker_puerto);
-	printf("RUTA DATABIN: %s\n", config->ruta_databin);
+	printf("IP FS: %s\n", configYAMA->fs_ip);
+	printf("PUERTO FS: %s\n", configYAMA->fs_puerto);
+	printf("PUERTO WORKER: %s\n", configYAMA->worker_puerto);
+	printf("RUTA DATABIN: %s\n", configYAMA->ruta_databin);
 
-	return config;
+	return configYAMA;
 }
 
 void srv_fork(char * port) {

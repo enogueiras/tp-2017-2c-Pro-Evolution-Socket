@@ -6,12 +6,12 @@ int main(int arg, char** argv) {
 
 	set_current_process(FS);
 	log_fs = log_create("../Log","FileSystem",false,LOG_LEVEL_INFO);
-	config = get_config("../Configuracion");
+	configYAMA = get_config("../Configuracion");
 	archivos = list_create();
 
 	if (argv[1] != NULL && streq(argv[1], "--clean")){
 		log_info(log_fs,"Iniciar ignorando/eliminando estado anterior");
-		format_fs(config,directorios);
+		format_fs(configYAMA,directorios);
 	}
 	else{
 		restablecerEstado();
@@ -23,7 +23,7 @@ int main(int arg, char** argv) {
 
 	title("File System");
 
-	server_start(config);
+	server_start(configYAMA);
 	inicializarConsola();
 
 	fclose(fileDirectorios);
@@ -34,18 +34,18 @@ int main(int arg, char** argv) {
 
 t_fileSystem *get_config(const char *path) {
 	t_config* c = config_create((char *) path);
-	t_fileSystem *config = malloc(sizeof(t_fileSystem));
+	t_fileSystem *configYAMA = malloc(sizeof(t_fileSystem));
 
-	config->puerto_fs = config_get_string_value(c, "PUERTO_FS");
-	config->ruta_metadata = config_get_string_value(c, "RUTA_METADATA");
-	config->nodosEstable = 0;
-	config->stable = false;
+	configYAMA->puerto_fs = config_get_string_value(c, "PUERTO_FS");
+	configYAMA->ruta_metadata = config_get_string_value(c, "RUTA_METADATA");
+	configYAMA->nodosEstable = 0;
+	configYAMA->stable = false;
 
 	title("Configuracion");
-	printf("PUERTO FS: %s\n", config->puerto_fs);
-	printf("RUTA METADATA: %s\n", config->ruta_metadata);
+	printf("PUERTO FS: %s\n", configYAMA->puerto_fs);
+	printf("RUTA METADATA: %s\n", configYAMA->ruta_metadata);
 
-	return config;
+	return configYAMA;
 }
 
 int importarArchivo(char* location, char* destino){

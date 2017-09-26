@@ -31,7 +31,7 @@ t_log* log_dataNode;
 
 socket_t fsfd;
 
-t_dataNode* config;
+t_dataNode* configYAMA;
 
 /*Funciones*/
 

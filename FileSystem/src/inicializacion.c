@@ -45,11 +45,11 @@ void restablecerNodos(t_config* restore_config) {
 				string_from_format("%s%s", tablaNodos->nombre_nodos[i],
 						"Libre"));
 		if (!(fileBitmap = fopen(
-				string_from_format("%s%s%s%s", config->ruta_metadata,
+				string_from_format("%s%s%s%s", configYAMA->ruta_metadata,
 						"/bitmaps/", tablaNodos->nombre_nodos[i], ".dat"),
 				"rb+"))) {
 			log_error(log_fs, "El archivo no se pudo abrir");
-			format_fs(config,directorios);
+			format_fs(configYAMA,directorios);
 		} else {
 			int size_bytes;
 			fseek(fileBitmap, 0, SEEK_END);
@@ -57,7 +57,7 @@ void restablecerNodos(t_config* restore_config) {
 			rewind(fileBitmap);
 
 			if(size_bytes == 0){
-				format_fs(config,directorios);
+				format_fs(configYAMA,directorios);
 			}else{
 				char* map;
 				if ((map = mmap(NULL, size_bytes, PROT_READ | PROT_WRITE,
@@ -137,9 +137,9 @@ void ingresarDirectorios(char* path) {
 
 void restablecerEstado() {
 
-	config->restore = false;
-	t_config* restore_config = config_create(string_from_format("%s%s",config->ruta_metadata,"/nodos.bin"));
-	fileDirectorios = fopen(string_from_format("%s%s", config->ruta_metadata,"/directorios.dat"), "wb+");
+	configYAMA->restore = false;
+	t_config* restore_config = config_create(string_from_format("%s%s",configYAMA->ruta_metadata,"/nodos.bin"));
+	fileDirectorios = fopen(string_from_format("%s%s", configYAMA->ruta_metadata,"/directorios.dat"), "wb+");
 	if (!fileDirectorios) log_error(log_fs, "El archivo no se pudo abrir");
 
 	int size_bytes;
@@ -148,14 +148,14 @@ void restablecerEstado() {
 	rewind(fileDirectorios);
 
 	if (size_bytes== 0 || restore_config == NULL || !config_has_property(restore_config, "TAMANIO")){
-		format_fs(config,directorios);
+		format_fs(configYAMA,directorios);
 	}else{
 		restablecerNodos(restore_config);
 		for (int i = 0; i < MAX_DIRECTORIOS; i++) {
 			fread(&directorios[i], sizeof(t_directory), 1, fileDirectorios);
 		}
 
-		ingresarDirectorios(string_from_format("%s%s", config->ruta_metadata, "/archivos/"));
+		ingresarDirectorios(string_from_format("%s%s", configYAMA->ruta_metadata, "/archivos/"));
 	}
 
 
