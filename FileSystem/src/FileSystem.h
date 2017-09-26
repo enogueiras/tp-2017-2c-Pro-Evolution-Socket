@@ -44,6 +44,8 @@ typedef struct{
 	char* nombre;
 	int tamanio;
 	char* tipo;
+	int padre;
+	bool disponible;
 	t_list* bloques;
 }t_arch;
 

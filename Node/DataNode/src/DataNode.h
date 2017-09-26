@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
 #include "protocol.h"

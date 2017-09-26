@@ -12,7 +12,7 @@ int main() {
 	fsfd = socket_connect(config->fs_ip, config->fs_puerto);
 
 	protocol_handshake_send(fsfd);
-	enviarNombreYTamanioNodo(fsfd);
+	//enviarNombreYTamanioNodo(fsfd);
 
 	printf("Conectado al FileSystem en %s:%s\n", config->fs_ip,
 			config->fs_puerto);
@@ -31,14 +31,13 @@ void recibirMensajesFileSystem() {
 	int bloqueId;
 	char* datos;
 	char data[packet.header.msgsize - 2];
-	char* longData;
 
 	switch (packet.header.opcode) {
 	case OP_SET_BLOQUE:
-		longData = string_from_format("h%s%s",
-				string_itoa(packet.header.msgsize - 2), "s");
-		serial_unpack(packet.payload, longData, &bloqueId, &data);
+		serial_unpack(packet.payload, "h", &bloqueId);
+		memcpy(data, packet.payload+4, packet.header.msgsize - 2);
 		setBloque(bloqueId, data);
+		memset(data, 0, packet.header.msgsize - 2);
 		break;
 	case OP_GET_BLOQUE:
 		serial_unpack(buffer, "h", &bloqueId);
