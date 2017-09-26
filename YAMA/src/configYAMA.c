@@ -1,15 +1,4 @@
-/*
- * configYAMA.c
- *
- *  Created on: 25/9/2017
- *      Author: utnso
- */
-#include  <string.h>
-#include  <stdlib.h>
-#include <commons/collections/list.h>
 #include "configYAMA.h"
-
-
 
 t_yama *get_configYAMA(const char *path) {
 	t_config* c = config_create((char *) path);
@@ -17,7 +6,8 @@ t_yama *get_configYAMA(const char *path) {
 
 	configYAMA->fs_ip = config_get_string_value(c, "FS_IP");
 	configYAMA->fs_puerto = config_get_string_value(c, "FS_PUERTO");
-	configYAMA->retardo_planif = config_get_int_value(c, "RETARDO_PLANIFICACION");
+	configYAMA->retardo_planif = config_get_int_value(c,
+			"RETARDO_PLANIFICACION");
 	configYAMA->algoritmo = config_get_string_value(c, "ALGORITMO_BALANCEO");
 	configYAMA->puerto_yama = config_get_string_value(c, "PUERTO_YAMA");
 

@@ -1,12 +1,7 @@
-/*
- * configYAMA.h
- *
- *  Created on: 25/9/2017
- *      Author: utnso
- */
-
 #ifndef CONFIGYAMA_H_
 #define CONFIGYAMA_H_
+
+#include "YAMA.h"
 
 typedef struct {
 	char* fs_ip;

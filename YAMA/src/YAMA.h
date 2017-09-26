@@ -1,5 +1,3 @@
-
-
 #ifndef YAMA_H_
 #define YAMA_H_
 
@@ -19,14 +17,10 @@
 #include "log.h"
 #include "serial.h"
 
-
-
-typedef struct{
-    socket_t clientID;
-    unsigned char process;
-}client_t;
-
-
+typedef struct {
+	socket_t clientID;
+	unsigned char process;
+} client_t;
 
 typedef struct {
 	int job;
@@ -38,10 +32,8 @@ typedef struct {
 	int estado;
 } t_tablaEstados;
 
-
 void init_server(socket_t, t_list*);
 
 socket_t fsfd;
-
 
 #endif /* YAMA_H_ */
