@@ -35,7 +35,7 @@ void recibirMensajesFileSystem() {
 	switch (packet.header.opcode) {
 	case OP_SET_BLOQUE:
 		serial_unpack(packet.payload, "h", &bloqueId);
-		memcpy(data, packet.payload+2, packet.header.msgsize - 2);
+		memcpy(data, packet.payload+4, packet.header.msgsize - 2);
 		setBloque(bloqueId, data);
 		memset(data, 0, packet.header.msgsize - 2);
 		break;
