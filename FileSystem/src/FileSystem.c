@@ -17,8 +17,7 @@ int main(int arg, char** argv) {
 		restablecerEstado();
 		for(int i = 0; i < list_size(archivos); i++){
 			t_arch* archivo = list_get(archivos, i);
-			printf("%s\n", archivo->nombre);
-
+			printf("%d\n", archivo->padre);
 		}
 	}
 
