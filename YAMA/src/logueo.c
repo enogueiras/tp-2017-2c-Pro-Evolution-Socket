@@ -12,7 +12,7 @@ static void realizarLogueo(t_log_level logLevel, int loguearEnPantalla, char *me
 void setPathArchivoDeLog(char *path)
 {
 	if (path == NULL)
-		pathArchivoDeLog = strdup("/tmp/marta.log");
+		pathArchivoDeLog = strdup("../Log_YAMA");
 	else
 		pathArchivoDeLog = strdup(path);
 
