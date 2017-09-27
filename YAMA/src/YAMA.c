@@ -1,20 +1,19 @@
 #include "YAMA.h"
 #include "configYAMA.h"
-#include "logueo.h"
 
 void establecerConexionFS(char * fs_ip,char * fs_puerto) {
 	// Me conecto a FileSystem y envío handshake
-	loguearYMostrarEnPantalla(LOG_LEVEL_INFO, "Iniciando conexión con File System");
 	fsfd = socket_connect(fs_ip, fs_puerto);
 	protocol_handshake_send(fsfd);
-	loguearYMostrarEnPantalla(LOG_LEVEL_INFO, "Conectado correctamente al File System");
+	printf("Conectado correctamente al FileSystem");
+	log_info(log_Yama, "Conectado correctamente al FileSystem");
 }
 
 
 int main() {
 
 	set_current_process(YAMA);
-	setPathArchivoDeLog("../Log_YAMA");
+	log_Yama = log_create("../Log", "YAMA", true, LOG_LEVEL_INFO);
 	title("YAMA");
 	configYAMA = get_configYAMA("../Configuracion"); // Carga configuración de archivo
 

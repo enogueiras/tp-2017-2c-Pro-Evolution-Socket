@@ -16,6 +16,7 @@
 #include "protocol.h"
 #include "log.h"
 #include "serial.h"
+#include <commons/log.h>
 
 typedef struct {
 	socket_t clientID;
@@ -33,6 +34,8 @@ typedef struct {
 } t_tablaEstados;
 
 void init_server(socket_t, t_list*);
+
+t_log* log_Yama;
 
 socket_t fsfd;
 
