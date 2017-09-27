@@ -2,11 +2,12 @@
 #include "configYAMA.h"
 #include "logueo.h"
 
-void establecerConexionFS(fs_ip, fs_puerto) {
+void establecerConexionFS(char * fs_ip,char * fs_puerto) {
 	// Me conecto a FileSystem y envío handshake
+	loguearYMostrarEnPantalla(LOG_LEVEL_INFO, "Iniciando conexión con File System");
 	fsfd = socket_connect(fs_ip, fs_puerto);
 	protocol_handshake_send(fsfd);
-	loguearYMostrarEnPantalla(LOG_LEVEL_INFO, "Me conecte al File System");
+	loguearYMostrarEnPantalla(LOG_LEVEL_INFO, "Conectado correctamente al File System");
 }
 
 
