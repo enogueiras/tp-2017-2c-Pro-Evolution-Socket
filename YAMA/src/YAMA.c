@@ -1,27 +1,29 @@
 #include "YAMA.h"
 #include "configYAMA.h"
 
-void establecerConexionFS(char * fs_ip,char * fs_puerto) {
+int establecerConexionFS(char * fs_ip,char * fs_puerto) {
 	// Me conecto a FileSystem y envío handshake
 	fsfd = socket_connect(fs_ip, fs_puerto);
 	protocol_handshake_send(fsfd);
 	printf("Conectado correctamente al FileSystem");
 	log_info(log_Yama, "Conectado correctamente al FileSystem");
+	return fsfd;
 }
 
 
 int main() {
 
 	set_current_process(YAMA);
-	log_Yama = log_create("../Log", "YAMA", true, LOG_LEVEL_INFO);
+	log_Yama = log_create("../LogYAMA", "YAMA", true, LOG_LEVEL_INFO);
 	title("YAMA");
 	configYAMA = get_configYAMA("../Configuracion"); // Carga configuración de archivo
 
 	// Me conecto a FileSystem y envío handshake
-	establecerConexionFS(configYAMA -> fs_ip, configYAMA -> fs_puerto);
+	int fsfd = establecerConexionFS(configYAMA -> fs_ip, configYAMA -> fs_puerto);
 	title("Conexiones");
 	t_list *clientes = list_create(); // Creo lista para gestionar clientes (Master)
-	init_server(fsfd, clientes); // Inicia servidor con el socket de FileSystem y la lista de clientes
+	t_tablaEstados tablaEstados = list_create(); // Creo la tabla de estados
+	init_server(fsfd, clientes); // Inicia servidor con el socket de FileSystem y la lista de clientes -- NO TENDRIA QUE TOMARLO DE LA CONFIG???
 
 	return 0;
 }
@@ -75,20 +77,23 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 							//Me manda el nombre del archivo a buscar en FS
 							longData = string_from_format("h%s%s",
 									string_itoa(packet.header.msgsize - 1), "s");
-							serial_unpack(packet.payload, longData, &script);
-							//Preguntar a FS info sobre el archivo
-							//Empezar planificacion y mandar mensajes a MASTER
+							serial_unpack(packet.payload, longData, &script); // Me manda un job ? De qué tipo es? Como lo uso?
+							// 1 - Preguntar a FS info sobre el archivo  -- Esto no iria en el check 2 hay que simular una respuesta del fs
+							// 2 - Empezar planificacion
+							// 3 - Mandar resultado de la planificacion a MASTER
 							break;
 						case OP_SEND_JOB_RESULTADO:
-							//Acá es la ruta y nombre del archivo final a almacenar
+							// 1 - Recibo ruta y nombre del archivo final a almacenar
+							// 2 - Mandar info a fs y que lo haga el?
 							break;
 						case OP_JOB_NODO_OK:
-							//Acá me envia un paquete con la informacion del nodo que terminó ok
-							//Volver a planificar para este nodo la siguiente etapa
+							// 1 - Recibo informacion del nodo que terminó ok
+							// 2 - Volver a planificar para este nodo la siguiente etapa
 							break;
 						case OP_JOB_NODO_ERORR:
-							// Me envia paquete informacion sobre nodo que tiró error
-							// Fijarse la etapa donde falló y abortar el job o volver a planificar sobre este
+							// 1 - Recibo informacion sobre nodo que tiró error
+							// 2 - Fijarse la etapa donde falló
+							// 3 - Abortar el job si fue en una etapa distinta a la de transformacion o volver a planificar sobre este (Esto debería ir en otra funcion)
 							break;
 						default:
 							break;

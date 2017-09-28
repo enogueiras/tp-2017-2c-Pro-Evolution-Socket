@@ -33,6 +33,16 @@ typedef struct {
 	int estado;
 } t_tablaEstados;
 
+typedef struct {
+ -
+ -	char *nombre;
+ -	char *ip;
+ -	char *puerto;
+ -	int carga;
+ -	int bloque;
+ -
+ -}t_nodo;
+
 void init_server(socket_t, t_list*);
 
 t_log* log_Yama;
