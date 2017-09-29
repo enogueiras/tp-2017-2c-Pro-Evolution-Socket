@@ -3,6 +3,36 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+t_tarea *newTareaTransformacion()
+{
+	t_tarea *tarea = malloc(sizeof(t_tarea));
+	tarea->tipo = TAREA_TRANSFORMACION;
+	tarea->estado = TAREA_NO_EJECUTADA;
+	tarea->nodo = NULL;
+
+	return tarea;
+}
+
+t_tarea *newTareaReduccionLocal()
+{
+	t_tarea *tarea = malloc(sizeof(t_tarea));
+	tarea->tipo = TAREA_REDUCCION_LOCAL;
+	tarea->nodo = NULL;
+	tarea->estado = TAREA_NO_EJECUTADA;
+
+	return tarea;
+}
+
+t_tarea *newTareaReduccionGlobal()
+{
+	t_tarea *tarea = malloc(sizeof(t_tarea));
+	tarea->tipo = TAREA_REDUCCION_GLOBAL;
+	tarea->nodo = NULL;
+	tarea->estado = TAREA_NO_EJECUTADA;
+
+	return tarea;
+}
+
 int tareaEsTransformacion(t_tarea *tarea)
 {
 	return tarea->tipo == TAREA_TRANSFORMACION;

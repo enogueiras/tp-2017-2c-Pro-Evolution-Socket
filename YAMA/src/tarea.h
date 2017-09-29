@@ -14,6 +14,12 @@ typedef struct {
 	uint32_t id;
 } t_tarea;
 
+t_tarea *newTareaTransformacion();
+
+t_tarea *newTareaReduccionLocal();
+
+t_tarea *newTareaReduccionGlobal();
+
 char *tareaObtenerNombreResultadoTemporal(t_tarea *tarea);
 
 int tareaEstaNoEjecutada(t_tarea *tarea);
