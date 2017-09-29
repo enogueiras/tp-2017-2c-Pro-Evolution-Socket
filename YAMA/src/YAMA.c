@@ -1,14 +1,8 @@
 #include "YAMA.h"
 #include "configYAMA.h"
 
-int establecerConexionFS(char * fs_ip,char * fs_puerto) {
-	// Me conecto a FileSystem y envío handshake
-	fsfd = socket_connect(fs_ip, fs_puerto);
-	protocol_handshake_send(fsfd);
-	printf("Conectado correctamente al FileSystem");
-	log_info(log_Yama, "Conectado correctamente al FileSystem");
-	return fsfd;
-}
+int establecerConexionFS(char * fs_ip,char * fs_puerto);
+void iniciarPlanificacionJob(char* job);
 
 
 int main() {
@@ -21,9 +15,12 @@ int main() {
 	// Me conecto a FileSystem y envío handshake
 	int fsfd = establecerConexionFS(configYAMA -> fs_ip, configYAMA -> fs_puerto);
 	title("Conexiones");
+
+	t_nodo listaNodos = list_create(); // Creo lista para gestionar los nodos que estén disponibles para uso
 	t_list *clientes = list_create(); // Creo lista para gestionar clientes (Master)
 	t_tablaEstados tablaEstados = list_create(); // Creo la tabla de estados
-	init_server(fsfd, clientes); // Inicia servidor con el socket de FileSystem y la lista de clientes -- NO TENDRIA QUE TOMARLO DE LA CONFIG???
+
+	init_server(fsfd, clientes); // Inicia servidor con el socket de FileSystem y la lista de clientes -- NO TENDRIA QUE TOMAR EL SOCKET DE LA CONFIG?
 
 	return 0;
 }
@@ -61,14 +58,17 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 					printf("Servidor: Socket %d se cerro\n", i);
 					socket_close(cli_sock);
 				}
-			} else { // En caso de que no sea un nuevo cliente, recibo el paquete y debo validar si es de FileSystem o de un cliente Master
-					 // Sólo está el caso de que sea de Master, esto ven cómo definirlo
+			}
+			else { // En caso de que no sea un nuevo cliente, recibo el paquete y debo validar si es de FileSystem o de un cliente Master
+
 				bool getClient(void *nbr) {
 					client_t *unCliente = nbr;
 					return (unCliente->clientID == i);
 				}
+
 				client_t* client = list_find(clientes, getClient);
 				packet_t packet = protocol_packet_receive(client->clientID);
+
 				if (client->process == MASTER) {
 					char * longData;
 					char * script;
@@ -80,6 +80,7 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 							serial_unpack(packet.payload, longData, &script); // Me manda un job ? De qué tipo es? Como lo uso?
 							// 1 - Preguntar a FS info sobre el archivo  -- Esto no iria en el check 2 hay que simular una respuesta del fs
 							// 2 - Empezar planificacion
+							iniciarPlanificacionJob(&script);
 							// 3 - Mandar resultado de la planificacion a MASTER
 							break;
 						case OP_SEND_JOB_RESULTADO:
@@ -98,9 +99,24 @@ void init_server(socket_t fs_fd, t_list *clientes) {
 						default:
 							break;
 					}
-
+				}
+				else if (client -> process == FS){
+					// Si el que que me manda mensajes es el FS habría que ver
 				}
 			}
 		}
 	}
+}
+
+int establecerConexionFS(char * fs_ip,char * fs_puerto) {
+	// Me conecto a FileSystem y envío handshake
+	fsfd = socket_connect(fs_ip, fs_puerto);
+	protocol_handshake_send(fsfd);
+	printf("Conectado correctamente al FileSystem");
+	log_info(log_Yama, "Conectado correctamente al FileSystem");
+	return fsfd;
+}
+
+void iniciarPlanificacionJob(char* job){
+
 }
