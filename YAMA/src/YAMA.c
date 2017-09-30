@@ -16,9 +16,9 @@ int main() {
 	int fsfd = establecerConexionFS(configYAMA -> fs_ip, configYAMA -> fs_puerto);
 	title("Conexiones");
 
-	t_nodo listaNodos = list_create(); // Creo lista para gestionar los nodos que estén disponibles para uso
+	t_list *listaNodos = list_create(); // Creo lista para gestionar los nodos que estén disponibles para uso
 	t_list *clientes = list_create(); // Creo lista para gestionar clientes (Master)
-	t_tablaEstados tablaEstados = list_create(); // Creo la tabla de estados
+	t_list *tablaEstados = list_create(); // Creo la tabla de estados
 
 	init_server(fsfd, clientes); // Inicia servidor con el socket de FileSystem y la lista de clientes -- NO TENDRIA QUE TOMAR EL SOCKET DE LA CONFIG?
 

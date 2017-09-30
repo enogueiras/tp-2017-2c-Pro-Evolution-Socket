@@ -9,13 +9,17 @@ t_job *newJob()
 	return job;
 }
 
-t_tarea obtenerTareaSiguienteA(t_job job, t_tarea tarea){
+static t_tarea *obtenerTareaSiguiente(t_job *job){
 
-	if (tareaEsTransformacion(tarea) && tareaEstaFinalizada(tarea)){
+	if (tareaEstaNoEjecutada(job->transformacion)){
+		return job->transformacion;
+	}
+
+	else if(tareaEstaNoEjecutada(job->reduccion_local)){
 		return job->reduccion_local;
 	}
 
-	else if(tareaEsReduccionLocal(tarea) && tareaEstaFinalizada(tarea)){
+	else if (tareaEstaNoEjecutada(job->reduccion_global)){
 		return job->reduccion_global;
 	}
 

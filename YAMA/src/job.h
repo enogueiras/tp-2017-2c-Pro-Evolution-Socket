@@ -10,9 +10,9 @@
 #include "tarea.h"
 
 typedef struct{
-	t_tarea transformacion;
-	t_tarea reduccion_local;
-	t_tarea reduccion_global;
+	t_tarea *transformacion;
+	t_tarea *reduccion_local;
+	t_tarea *reduccion_global;
 }t_job;
 
 t_job *newJob();

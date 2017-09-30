@@ -1,5 +1,6 @@
 #ifndef TAREA_H_
 #define TAREA_H_
+#include "YAMA.h"
 
 typedef enum {TAREA_TRANSFORMACION, TAREA_REDUCCION_LOCAL, TAREA_REDUCCION_GLOBAL} TipoTarea;
 
