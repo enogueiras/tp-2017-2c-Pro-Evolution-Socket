@@ -6,9 +6,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <commons/config.h>
+#include <commons/string.h>
 #include <commons/log.h>
 #include <commons/bitarray.h>
 #include <commons/collections/list.h>
@@ -16,11 +20,18 @@
 #include "thread.h"
 #include "serial.h"
 #include "protocol.h"
+#include "console.h"
+
+#define MAX_DIRECTORIOS 100
 
 /*ESTRUCTURAS*/
 
 typedef struct {
 	char* puerto_fs;
+	bool stable;
+	bool restore;
+	int nodosEstable;
+	char* ruta_metadata;
 } t_fileSystem;
 
 typedef struct {
@@ -30,14 +41,17 @@ typedef struct {
 }t_directory;
 
 typedef struct{
+	char* nombre;
 	int tamanio;
-	int tipo;
+	char* tipo;
+	int padre;
+	bool disponible;
 	t_list* bloques;
 }t_arch;
 
 typedef struct{
-	char* original;
-	char* copia;
+	char** original;
+	char** copia;
 	int bytes;
 }t_block;
 
@@ -48,45 +62,40 @@ typedef struct{
 	t_bitarray* bitmap;
 }t_nodo;
 
-
 typedef struct {
 	thread_t thread;
 	socket_t socket;
 	process_t type;
 } client_t;
 
-t_fileSystem* config;
+typedef struct {
+	int tamanio;
+	int libre;
+	char** nombre_nodos;
+} t_nodos_table;
+
+t_fileSystem* configFS;
 t_log* log_fs;
-t_directory directorios[100];
+t_list* archivos;
+t_directory directorios[MAX_DIRECTORIOS];
+t_nodos_table* tablaNodos;
+t_nodo* nodos;
+FILE *fileDirectorios, *fileNodos, *fileBitmap;
 
 struct {
 	thread_t thread;
 	t_list* clients;
 	bool active;
-	bool restore;
-	bool stable;
 } server;
-
-struct {
-	int tamanio;
-	int libre;
-	t_nodo* nodos;
-} nodos_table;
 
 /*FUNCIONES*/
 
-void server_start(t_fileSystem*);
-
-void server_end();
-
-void cli_thread(client_t*);
 
 t_fileSystem *get_config(const char* path);
 
-void inicializarConsola();
-
 int importarArchivo(char*, char*);
 
-void enviarADataNode(char*, int, int);
+void enviarADataNode(char*, int, int, int);
+
 
 #endif /* FILESYSTEM_H_ */

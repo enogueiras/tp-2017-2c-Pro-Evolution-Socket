@@ -1,31 +1,10 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <commons/config.h>
-#include <commons/string.h>
-#include "socket.h"
-#include "globals.h"
-#include "protocol.h"
-#include "utils.h"
-
-typedef struct {
-	char* yama_ip;
-	char* yama_puerto;
-} t_master;
-
-t_master* config;
-
-t_master *get_config(const char* path);
-void conexionConYama();
-void start_job(string, socket_t, socket_t);
-
-#define PACKAGESIZE 1024
+#include "Master.h"
 
 int main() {
 
 	set_current_process(MASTER);
 	title("Master");
-	config = get_config("../Configuracion");
+	configMASTER = get_config("../Configuracion");
 
 	title("Conexiones");
 	conexionConYama();
@@ -35,8 +14,8 @@ int main() {
 }
 
 void conexionConYama() {
-	socket_t yamaSocket = socket_init(config->yama_ip, config->yama_puerto);
-	socket_t workerSocket = socket_init(config->yama_ip, "5050");
+	socket_t yamaSocket = socket_init(configMASTER->yama_ip, configMASTER->yama_puerto);
+	socket_t workerSocket = socket_init(configMASTER->yama_ip, "5050");
 	printf(
 			"Conectado al servidor. Ya puede enviar mensajes. Escriba 'exit' para salir\n");
 
@@ -54,16 +33,16 @@ void conexionConYama() {
 
 t_master *get_config(const char *path) {
 	t_config* c = config_create((char *) path);
-	t_master *config = malloc(sizeof(t_master));
+	t_master *configMASTER = malloc(sizeof(t_master));
 
-	config->yama_ip = config_get_string_value(c, "YAMA_IP");
-	config->yama_puerto = config_get_string_value(c, "YAMA_PUERTO");
+	configMASTER->yama_ip = config_get_string_value(c, "YAMA_IP");
+	configMASTER->yama_puerto = config_get_string_value(c, "YAMA_PUERTO");
 
 	title("Configuracion");
-	printf("IP YAMA: %s\n", config->yama_ip);
-	printf("PUERTO YAMA: %s\n", config->yama_puerto);
+	printf("IP YAMA: %s\n", configMASTER->yama_ip);
+	printf("PUERTO YAMA: %s\n", configMASTER->yama_puerto);
 
-	return config;
+	return configMASTER;
 }
 
 void start_job(string path, socket_t yama, socket_t worker){
@@ -74,7 +53,7 @@ void start_job(string path, socket_t yama, socket_t worker){
 		printf("Error al leer el archivo. Intente nuevamente.\n");
 
 	}
-
+	//Armar paquete y enviarlo
 	socket_send_string(job, yama);
 	socket_send_string(job, worker);
 }

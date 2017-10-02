@@ -1,1 +1,2 @@
 PUERTO_FS=5010
+RUTA_METADATA=../metadata

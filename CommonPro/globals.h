@@ -9,7 +9,8 @@
 #include <sys/types.h>
 #include <commons/string.h>
 
-#define BUFFER_CAPACITY 1024
+#define MB 1048576
+#define BUFFER_CAPACITY MB + 1024
 
 typedef void * pointer;
 typedef unsigned char byte;
